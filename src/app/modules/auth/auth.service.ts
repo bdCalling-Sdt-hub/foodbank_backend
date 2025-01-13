@@ -109,7 +109,7 @@ const ChangePasswordService = async (payload: IChangePassword) => {
   // Find the user by id
   const user = await UserTable.findById(id);
   if (!user) {
-    throw new ApiError(httpStatus.NOT_FOUND, "User not found!");
+    throw new ApiError(httpStatus.BAD_REQUEST, "User not found!");
   }
 
   // Verify the old password
@@ -129,41 +129,90 @@ const ChangePasswordService = async (payload: IChangePassword) => {
   await user.save();
 };
 
-type IReset = {
+type IForgot = {
   id: string;
   email: string;
 };
 
-// reset password
-const ResetPasswordService = async (payload: IReset) => {
+// forgot password
+const forgotPasswordService = async (payload: IForgot) => {
   const { email } = payload;
+  // console.log(email);
   // Find the user by id
-  const user = await UserTable.findOne({ email });
+  const user = await UserTable.findOne(
+    { email },
+    { role: 1, _id: 1, email: 1 }
+  );
 
   if (!user) {
     throw new ApiError(
-      httpStatus.NOT_FOUND,
+      httpStatus.BAD_REQUEST,
       "User with this email does not exist!"
     );
   }
 
-  // Create a password reset token
+  // console.log(user);
 
-  const resetToken = jwtTokenProvider.createToken(
+  // Create a password reset token
+  const resetTokenPassword = jwtTokenProvider.resetToken(
     { id: user?._id },
     Config.refresh_key as Secret,
-    Config.fefresh_key_expire_in as string
+    "5m" as string
   );
 
-  const resetLink = `${Config.frontendUrl}/reset-password?token=${resetToken}`;
+  // console.log(resetTokenPassword);
+
+  const resetLink = `${Config.frontendUrl}?token=${resetTokenPassword}`;
 
   // send mail in user
   MailSend(user, resetLink);
+
+  return {
+    resetLink,
+    user,
+  };
+};
+
+// reset password
+const resetPasswordService = async (payload: any, token: string) => {
+  const { email, resetPassword } = payload;
+  // console.log(email);
+  // Find the user by id
+  const user = await UserTable.findOne(
+    { email },
+    { role: 1, _id: 1, email: 1 }
+  );
+
+  if (!user) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      "User with this email does not exist!"
+    );
+  }
+
+  // verify token
+  const isValidToken = jwtTokenProvider.verifyJwtToken(
+    token,
+    Config.refresh_key as Secret
+  );
+
+  // hash password
+  const password = await bcrypt.hash(
+    resetPassword,
+    Number(Config.password_sold_round)
+  );
+
+  // update password
+  await UserTable.updateOne({ email }, { password });
+
+  console.log(password);
+  console.log(isValidToken);
 };
 
 export const authService = {
   loginUserService,
   refreshTokenService,
   ChangePasswordService,
-  ResetPasswordService,
+  forgotPasswordService,
+  resetPasswordService,
 };

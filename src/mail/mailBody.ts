@@ -1,6 +1,7 @@
 import { IUser } from "../app/modules/users/user.interface";
 
 export const MailBody = (payload: IUser, link: string) => {
+  console.log("link____________", link);
   const body = `
     <!DOCTYPE html>
     <html lang="en">

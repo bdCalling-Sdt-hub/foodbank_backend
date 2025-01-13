@@ -7,7 +7,7 @@ const subject: string = "Reset Your Password";
 
 export const MailSend = async (payload: IUser, link: string) => {
   const user = payload.email;
-  // console.log("email from mail send file", user);
+  console.log("email from mail send file", link);
 
   const transporter = nodemailer.createTransport({
     host: "smtp.gmail.com",

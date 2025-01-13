@@ -68,16 +68,31 @@ const changePassword = CatchAsync(async (req: Request, res: Response) => {
   });
 });
 
-// reset password
-const resetPassword = CatchAsync(async (req: Request, res: Response) => {
+// forgot password
+const forgotPassword = CatchAsync(async (req: Request, res: Response) => {
   const payload = req.body;
 
-  const result = await authService.ResetPasswordService(payload);
+  const result = await authService.forgotPasswordService(payload);
 
   SendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: "Password change success!",
+    message: "Please check your mail.",
+    data: result,
+  });
+});
+// reset password
+const resetPassword = CatchAsync(async (req: Request, res: Response) => {
+  const payload = req.body;
+  const token = req.headers.authorization;
+
+  // @ts-ignore
+  const result = await authService.resetPasswordService(payload, token);
+
+  SendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Password updated!",
     data: result,
   });
 });
@@ -86,5 +101,6 @@ export const loginController = {
   loginUser,
   refreshToken,
   changePassword,
+  forgotPassword,
   resetPassword,
 };
