@@ -5,6 +5,8 @@ import { Secret } from "jsonwebtoken";
 import Config from "../../../config/Config";
 import ApiError from "../../../error/APIsError";
 import { jwtTokenProvider } from "../../../helper/JTWProvider";
+import { MailSend } from "../../../mail/mailSend";
+import { IChangePassword } from "../../../types/common";
 import { UserTable } from "../users/user.model";
 import {
   IAuthLoginTypes,
@@ -101,7 +103,7 @@ const refreshTokenService = async (token: string): Promise<IRefreshToken> => {
 };
 
 // password change
-const ChangePasswordService = async (payload: any) => {
+const ChangePasswordService = async (payload: IChangePassword) => {
   const { id, oldPassword, newPassword } = payload;
 
   // Find the user by id
@@ -127,8 +129,41 @@ const ChangePasswordService = async (payload: any) => {
   await user.save();
 };
 
+type IReset = {
+  id: string;
+  email: string;
+};
+
+// reset password
+const ResetPasswordService = async (payload: IReset) => {
+  const { email } = payload;
+  // Find the user by id
+  const user = await UserTable.findOne({ email });
+
+  if (!user) {
+    throw new ApiError(
+      httpStatus.NOT_FOUND,
+      "User with this email does not exist!"
+    );
+  }
+
+  // Create a password reset token
+
+  const resetToken = jwtTokenProvider.createToken(
+    { id: user?._id },
+    Config.refresh_key as Secret,
+    Config.fefresh_key_expire_in as string
+  );
+
+  const resetLink = `${Config.frontendUrl}/reset-password?token=${resetToken}`;
+
+  // send mail in user
+  MailSend(user, resetLink);
+};
+
 export const authService = {
   loginUserService,
   refreshTokenService,
   ChangePasswordService,
+  ResetPasswordService,
 };

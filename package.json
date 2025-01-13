@@ -14,7 +14,8 @@
     "express": "^4.21.2",
     "http-status": "^2.1.0",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.9.4"
+    "mongoose": "^8.9.4",
+    "nodemailer": "^6.9.16"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
@@ -23,6 +24,7 @@
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
     "@types/jsonwebtoken": "^9.0.7",
+    "@types/nodemailer": "^6.4.17",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.7.3"
   }
