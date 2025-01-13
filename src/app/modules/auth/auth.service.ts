@@ -1,5 +1,6 @@
 import httpStatus from "http-status";
 
+import bcrypt from "bcrypt";
 import { Secret } from "jsonwebtoken";
 import Config from "../../../config/Config";
 import ApiError from "../../../error/APIsError";
@@ -99,7 +100,35 @@ const refreshTokenService = async (token: string): Promise<IRefreshToken> => {
   };
 };
 
+// password change
+const ChangePasswordService = async (payload: any) => {
+  const { id, oldPassword, newPassword } = payload;
+
+  // Find the user by id
+  const user = await UserTable.findById(id);
+  if (!user) {
+    throw new ApiError(httpStatus.NOT_FOUND, "User not found!");
+  }
+
+  // Verify the old password
+  const isOldPasswordMatch = await bcrypt.compare(oldPassword, user.password);
+  if (!isOldPasswordMatch) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Old password is incorrect");
+  }
+
+  // Hash the new password
+  const hashedNewPassword = await bcrypt.hash(
+    newPassword,
+    Number(Config.password_sold_round)
+  );
+
+  // Save the password
+  user.password = hashedNewPassword;
+  await user.save();
+};
+
 export const authService = {
   loginUserService,
   refreshTokenService,
+  ChangePasswordService,
 };
