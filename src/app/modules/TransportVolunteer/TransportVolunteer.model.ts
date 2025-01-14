@@ -83,7 +83,7 @@ const TransportVolunteerSchema = new Schema<
 
     status: {
       type: String,
-      enum: ["client", "drive", "warehouse"],
+      enum: ["client", "driver", "warehouse"],
       trim: true,
       required: true,
     },
@@ -94,8 +94,8 @@ const TransportVolunteerSchema = new Schema<
       trim: true,
     },
     volunteerType: {
-      type: String,
-      enum: ["vip", "regular"],
+      type: Boolean,
+      default: false,
       trim: true,
     },
   },

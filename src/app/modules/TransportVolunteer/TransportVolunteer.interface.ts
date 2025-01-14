@@ -1,8 +1,7 @@
 import { Model } from "mongoose";
 
 type IVolunteerRole = "driver" | "warehouse" | "both";
-type IVolunteerStatus = "vip" | "regular";
-type IStatus = "client" | "drive" | "warehouse";
+type IStatus = "client" | "driver" | "warehouse";
 
 export type ITransportVolunteer = {
   firstName: string;
@@ -23,7 +22,7 @@ export type ITransportVolunteer = {
   clientDeliveryGroup?: string;
 
   // volunteer unique fields
-  volunteerType?: IVolunteerStatus; // "vip" | "regular";
+  volunteerType?: boolean;
   volunteerRole?: IVolunteerRole; // "driver" | "warehouse" | "both";
   status: IStatus; // "client" | "drive" | "warehouse";
 };
