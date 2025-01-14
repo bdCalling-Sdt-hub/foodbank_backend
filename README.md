@@ -22,6 +22,7 @@
 
 - eventName
 - eventType ()
+- eventVolunteers[]
 - location
 - deliveryDriver
 - warehouseVolunteer
@@ -78,3 +79,5 @@
 - volunteerGroupName
 - volunteersTypeList (list)
 - volunteers
+
+client, volunteer,
