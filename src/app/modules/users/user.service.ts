@@ -74,9 +74,27 @@ const UpdateUserService = async (
   return updatedUser;
 };
 
+// delete user service
+const DeleteUserService = async (
+  id: string
+): Promise<Partial<IUser> | null> => {
+  if (!id) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "User ID is required!");
+  }
+
+  const result = await UserTable.findByIdAndDelete(id);
+
+  if (!result) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "User does not exits!");
+  }
+
+  return result;
+};
+
 export const UserService = {
   CreateUserService,
   GetAllUserService,
   GetSingleUserService,
   UpdateUserService,
+  DeleteUserService,
 };
