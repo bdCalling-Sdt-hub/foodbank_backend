@@ -8,3 +8,13 @@ export type IChangePassword = {
   oldPassword: string;
   newPassword: string;
 };
+
+export type IForgot = {
+  id: string;
+  email: string;
+};
+
+export type IResetPassword = {
+  email: string;
+  resetPassword: string;
+};

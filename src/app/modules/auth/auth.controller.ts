@@ -6,6 +6,7 @@ import SendResponse from "../../../shared/SendResponse";
 import { IUserLoginResponse } from "./auth.interface";
 import { authService } from "./auth.service";
 
+// login user
 const loginUser = CatchAsync(async (req: Request, res: Response) => {
   const { ...loginData } = req.body;
 
@@ -30,6 +31,7 @@ const loginUser = CatchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// refresh token
 const refreshToken = CatchAsync(async (req: Request, res: Response) => {
   const { refreshToken } = req.cookies;
   console.log(refreshToken);
@@ -71,7 +73,6 @@ const changePassword = CatchAsync(async (req: Request, res: Response) => {
 // forgot password
 const forgotPassword = CatchAsync(async (req: Request, res: Response) => {
   const payload = req.body;
-
   const result = await authService.forgotPasswordService(payload);
 
   SendResponse(res, {
@@ -81,6 +82,7 @@ const forgotPassword = CatchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
+
 // reset password
 const resetPassword = CatchAsync(async (req: Request, res: Response) => {
   const payload = req.body;

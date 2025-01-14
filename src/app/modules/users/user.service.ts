@@ -3,6 +3,7 @@ import ApiError from "../../../error/APIsError";
 import { IUser } from "./user.interface";
 import { UserTable } from "./user.model";
 
+// create user service
 const CreateUserService = async (payload: IUser): Promise<IUser | null> => {
   // Check if the contact number or email already exists
   const isCheckNumber = await UserTable.findOne({
@@ -34,6 +35,48 @@ const CreateUserService = async (payload: IUser): Promise<IUser | null> => {
   return result;
 };
 
+// get all user service
+const GetAllUserService = async (): Promise<IUser[] | null> => {
+  const result = await UserTable.find({}).sort({ createdAt: -1 });
+  return result;
+};
+
+// get all user service
+const GetSingleUserService = async (id: string): Promise<IUser | null> => {
+  const user = await UserTable.findById(id);
+
+  if (!user) {
+    throw new ApiError(httpStatus.NOT_FOUND, "User does not exist!");
+  }
+  return user;
+};
+
+// Update user service
+const UpdateUserService = async (
+  id: string,
+  payload: Partial<IUser>
+): Promise<Partial<IUser> | null> => {
+  if (!id) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "User ID is required!");
+  }
+
+  // Update the user and return the updated document
+  const updatedUser = await UserTable.findByIdAndUpdate(
+    id,
+    { $set: payload },
+    { new: true, runValidators: true }
+  );
+
+  if (!updatedUser) {
+    throw new ApiError(httpStatus.NOT_FOUND, "User does not exist!");
+  }
+
+  return updatedUser;
+};
+
 export const UserService = {
   CreateUserService,
+  GetAllUserService,
+  GetSingleUserService,
+  UpdateUserService,
 };

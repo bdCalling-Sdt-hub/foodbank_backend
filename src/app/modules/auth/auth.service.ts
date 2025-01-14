@@ -6,7 +6,11 @@ import Config from "../../../config/Config";
 import ApiError from "../../../error/APIsError";
 import { jwtTokenProvider } from "../../../helper/JTWProvider";
 import { MailSend } from "../../../mail/mailSend";
-import { IChangePassword } from "../../../types/common";
+import {
+  IChangePassword,
+  IForgot,
+  IResetPassword,
+} from "../../../types/common";
 import { UserTable } from "../users/user.model";
 import {
   IAuthLoginTypes,
@@ -129,19 +133,14 @@ const ChangePasswordService = async (payload: IChangePassword) => {
   await user.save();
 };
 
-type IForgot = {
-  id: string;
-  email: string;
-};
-
 // forgot password
 const forgotPasswordService = async (payload: IForgot) => {
   const { email } = payload;
-  // console.log(email);
+
   // Find the user by id
   const user = await UserTable.findOne(
     { email },
-    { role: 1, _id: 1, email: 1 }
+    { firstName: 1, role: 1, _id: 1, email: 1 }
   );
 
   if (!user) {
@@ -150,8 +149,6 @@ const forgotPasswordService = async (payload: IForgot) => {
       "User with this email does not exist!"
     );
   }
-
-  // console.log(user);
 
   // Create a password reset token
   const resetTokenPassword = jwtTokenProvider.resetToken(
@@ -174,9 +171,9 @@ const forgotPasswordService = async (payload: IForgot) => {
 };
 
 // reset password
-const resetPasswordService = async (payload: any, token: string) => {
+const resetPasswordService = async (payload: IResetPassword, token: string) => {
   const { email, resetPassword } = payload;
-  // console.log(email);
+
   // Find the user by id
   const user = await UserTable.findOne(
     { email },
@@ -191,10 +188,7 @@ const resetPasswordService = async (payload: any, token: string) => {
   }
 
   // verify token
-  const isValidToken = jwtTokenProvider.verifyJwtToken(
-    token,
-    Config.refresh_key as Secret
-  );
+  jwtTokenProvider.verifyJwtToken(token, Config.refresh_key as Secret);
 
   // hash password
   const password = await bcrypt.hash(
@@ -204,9 +198,6 @@ const resetPasswordService = async (payload: any, token: string) => {
 
   // update password
   await UserTable.updateOne({ email }, { password });
-
-  console.log(password);
-  console.log(isValidToken);
 };
 
 export const authService = {

@@ -8,7 +8,7 @@
 
 - firstName
 - lastName
-- email
+- email unique
 - contactNo
 - password
 - role (super admin, admin)
@@ -21,7 +21,7 @@
 -/api/v1/event/create-event/
 
 - eventName
-- eventType
+- eventType ()
 - location
 - deliveryDriver
 - warehouseVolunteer
