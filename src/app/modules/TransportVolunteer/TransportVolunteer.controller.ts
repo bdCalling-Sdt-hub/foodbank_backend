@@ -1,7 +1,10 @@
 import { Request, Response } from "express";
 import httpStatus from "http-status";
+import { paginationFields } from "../../../constant/constant";
 import CatchAsync from "../../../shared/CatchAsync";
+import pick from "../../../shared/pick";
 import SendResponse from "../../../shared/SendResponse";
+import { paginationFilterableKey } from "./TransportVolunteer.constant";
 import { ITransportVolunteer } from "./TransportVolunteer.interface";
 import { TransportVolunteerService } from "./TransportVolunteer.service";
 
@@ -25,14 +28,23 @@ const CreateTransportVolunteerController = CatchAsync(
 // get all transport volunteer
 const GetAllTransportVolunteerController = CatchAsync(
   async (req: Request, res: Response) => {
+    const filters = pick(req.query, paginationFilterableKey);
+
+    const paginationOptions = pick(req.query, paginationFields);
+
     const result =
-      await TransportVolunteerService.GetAllTransportVolunteerService();
+      await TransportVolunteerService.GetAllTransportVolunteerService(
+        // @ts-ignore
+        filters,
+        paginationOptions
+      );
 
     SendResponse<ITransportVolunteer[] | null>(res, {
       statusCode: httpStatus.OK,
       success: true,
       message: "Get all volunteer success!",
-      data: result,
+      meta: result.meta,
+      data: result.data,
     });
   }
 );

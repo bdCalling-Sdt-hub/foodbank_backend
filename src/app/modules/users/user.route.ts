@@ -6,12 +6,13 @@ const router = express.Router();
 
 router.post(
   "/create-user",
-  AuthProvider.Auth(ENUM_USER_ROLE.SUPER_ADMIN),
+  AuthProvider.Auth(ENUM_USER_ROLE.SUPER_ADMIN, ENUM_USER_ROLE.ADMIN),
   UserController.CreateUserController
 );
+
 router.get(
   "/",
-  AuthProvider.Auth(ENUM_USER_ROLE.SUPER_ADMIN),
+  // AuthProvider.Auth(ENUM_USER_ROLE.SUPER_ADMIN),
   UserController.GetAllUserController
 );
 router.get("/:id", UserController.GetSingleUserController);
