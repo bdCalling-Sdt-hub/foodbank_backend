@@ -20,6 +20,7 @@ export type ITransportVolunteer = {
   dietaryRestrictions?: string;
   deliveryInstructions?: string;
   clientDeliveryGroup?: string;
+  email?: string;
 
   // volunteer unique fields
   volunteerType?: boolean;
@@ -51,4 +52,5 @@ export type ITransportVolunteerFilters = {
   dietaryRestrictions?: string;
   deliveryInstructions?: string;
   clientDeliveryGroup?: string;
+  email?: string;
 };

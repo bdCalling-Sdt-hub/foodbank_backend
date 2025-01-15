@@ -3,58 +3,56 @@ import httpStatus from "http-status";
 import CatchAsync from "../../../shared/CatchAsync";
 import SendResponse from "../../../shared/SendResponse";
 import { ITransportVolunteer } from "../TransportVolunteer/TransportVolunteer.interface";
-import { ClientService } from "./clients.service";
+import { DriverService } from "./drivers.service";
 
-// ------------------CLIENT APIs endpoint------------------
-// Get all client
-const GetAllClientsController = CatchAsync(
+// ------------------Driver APIs endpoint------------------
+// Get all driver
+const GetAllDeriverController = CatchAsync(
   async (req: Request, res: Response) => {
-    const result = await ClientService.GetAllClientService();
+    const result = await DriverService.GetAllDriverService();
 
     SendResponse<Partial<ITransportVolunteer[]>>(res, {
       statusCode: httpStatus.OK,
       success: true,
-      message: "Clients get success",
+      message: "Drivers get success",
       data: result,
     });
   }
 );
 
-// Get single client
-const GetSingleClientController = CatchAsync(
+//Single get driver
+const GetSingleDriverController = CatchAsync(
   async (req: Request, res: Response) => {
     const { id } = req.params;
-
-    const result = await ClientService.GetSingleTransportClientService(id);
+    const result = await DriverService.GetSingleDriverService(id);
 
     SendResponse<Partial<ITransportVolunteer>>(res, {
       statusCode: httpStatus.OK,
       success: true,
-      message: "Single client get success",
+      message: "Single drivers get success!",
       data: result,
     });
   }
 );
 
-// update single client
-const UpdateSingleClientController = CatchAsync(
+//update driver
+const UpdateSingleDriverController = CatchAsync(
   async (req: Request, res: Response) => {
     const { id } = req.params;
     const payload = req.body;
-
-    const result = await ClientService.UpdateSingleClientService(id, payload);
+    const result = await DriverService.UpdateSingleDriverService(id, payload);
 
     SendResponse<Partial<ITransportVolunteer>>(res, {
       statusCode: httpStatus.OK,
       success: true,
-      message: "Client updated success!",
+      message: "Driver updated success!",
       data: result,
     });
   }
 );
 
-export const ClientController = {
-  GetAllClientsController,
-  GetSingleClientController,
-  UpdateSingleClientController,
+export const DriverController = {
+  GetAllDeriverController,
+  GetSingleDriverController,
+  UpdateSingleDriverController,
 };

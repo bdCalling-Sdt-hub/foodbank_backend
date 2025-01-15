@@ -3,58 +3,59 @@ import httpStatus from "http-status";
 import CatchAsync from "../../../shared/CatchAsync";
 import SendResponse from "../../../shared/SendResponse";
 import { ITransportVolunteer } from "../TransportVolunteer/TransportVolunteer.interface";
-import { ClientService } from "./clients.service";
+import { WarehouseService } from "./warehouse.service";
 
-// ------------------CLIENT APIs endpoint------------------
-// Get all client
-const GetAllClientsController = CatchAsync(
+// ------------------Warehouse APIs endpoint------------------
+// Get all Warehouse
+const GetAllWarehouseController = CatchAsync(
   async (req: Request, res: Response) => {
-    const result = await ClientService.GetAllClientService();
+    const result = await WarehouseService.GetAllWarehouseService();
 
     SendResponse<Partial<ITransportVolunteer[]>>(res, {
       statusCode: httpStatus.OK,
       success: true,
-      message: "Clients get success",
+      message: "Warehouse get success",
       data: result,
     });
   }
 );
 
-// Get single client
-const GetSingleClientController = CatchAsync(
+//Single get Warehouse
+const GetSingleWarehouseController = CatchAsync(
   async (req: Request, res: Response) => {
     const { id } = req.params;
-
-    const result = await ClientService.GetSingleTransportClientService(id);
+    const result = await WarehouseService.GetSingleWarehouseService(id);
 
     SendResponse<Partial<ITransportVolunteer>>(res, {
       statusCode: httpStatus.OK,
       success: true,
-      message: "Single client get success",
+      message: "Single warehouse get success!",
       data: result,
     });
   }
 );
 
-// update single client
-const UpdateSingleClientController = CatchAsync(
+//update Warehouse
+const UpdateSingleWarehouseController = CatchAsync(
   async (req: Request, res: Response) => {
     const { id } = req.params;
     const payload = req.body;
-
-    const result = await ClientService.UpdateSingleClientService(id, payload);
+    const result = await WarehouseService.UpdateSingleWarehouseService(
+      id,
+      payload
+    );
 
     SendResponse<Partial<ITransportVolunteer>>(res, {
       statusCode: httpStatus.OK,
       success: true,
-      message: "Client updated success!",
+      message: "Warehouse updated success!",
       data: result,
     });
   }
 );
 
-export const ClientController = {
-  GetAllClientsController,
-  GetSingleClientController,
-  UpdateSingleClientController,
+export const WarehouseController = {
+  GetAllWarehouseController,
+  GetSingleWarehouseController,
+  UpdateSingleWarehouseController,
 };

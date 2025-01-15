@@ -80,10 +80,16 @@ const TransportVolunteerSchema = new Schema<
       type: String,
       trim: true,
     },
-
+    email: {
+      type: String,
+      trim: true,
+    },
     status: {
       type: String,
-      enum: ["client", "driver", "warehouse"],
+      enum: {
+        values: ["client", "driver", "warehouse"],
+        message: `{VALUE} is not supported`,
+      },
       trim: true,
       required: true,
     },

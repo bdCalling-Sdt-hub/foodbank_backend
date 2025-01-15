@@ -81,3 +81,23 @@
 - volunteers
 
 client, volunteer,
+
+## Get, single get & update APIs endpoint for Client, Warehouse and Driver
+
+### Client APIs endpoint
+
+_ /api/v1/volunteers/get-clients (pagination, filter and sort)
+_ /api/v1/volunteers/get-single-client
+\_ /api/v1/volunteers/update-client
+
+### Warehouse APIs endpoint
+
+_ /api/v1/volunteers/get-warehouses (pagination, filter and sort)
+_ /api/v1/volunteers/get-single-warehouse
+\_ /api/v1/volunteers/update-warehouse
+
+### driver APIs endpoint
+
+_ /api/v1/volunteers/get-drivers (pagination, filter and sort)
+_ /api/v1/volunteers/get-single-driver
+\_ /api/v1/volunteers/update-driver

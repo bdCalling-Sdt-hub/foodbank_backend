@@ -1,8 +1,11 @@
 import express from "express";
 import { AuthRoutes } from "../modules/auth/auth.route";
 import { ClientRoutes } from "../modules/clients/clients.route";
+import { DriverRoutes } from "../modules/drivers/drivers.route";
+import { EventRouters } from "../modules/events/events.route";
 import { TransportVolunteerRoutes } from "../modules/TransportVolunteer/TransportVolunteer.route";
 import { UserRouters } from "../modules/users/user.route";
+import { WarehouseRoutes } from "../modules/warehouse/warehouse.route";
 
 const router = express.Router();
 
@@ -15,13 +18,26 @@ const modulesRouters = [
     path: "/auth/",
     route: AuthRoutes,
   },
+
+  {
+    path: "/volunteers/",
+    route: TransportVolunteerRoutes,
+  },
+  {
+    path: "/warehouse/",
+    route: WarehouseRoutes,
+  },
   {
     path: "/client/",
     route: ClientRoutes,
   },
   {
-    path: "/volunteers/",
-    route: TransportVolunteerRoutes,
+    path: "/driver/",
+    route: DriverRoutes,
+  },
+  {
+    path: "/events",
+    route: EventRouters,
   },
 ];
 

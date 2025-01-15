@@ -107,9 +107,56 @@ const UpdateSingleTransportVolunteerService = async (
   return updateVolunteer;
 };
 
+// ------------------CLIENT APIs endpoint------------------
+const GetAllTransportClientService = async () => {
+  const filterClient = await TransportVolunteerTable.aggregate([
+    {
+      $match: {
+        status: "client",
+      },
+    },
+  ]);
+
+  return filterClient;
+};
+
+// single client get
+const GetSingleTransportClientService = async (id: string) => {
+  const filterClient = await TransportVolunteerTable.findById(id);
+
+  if (!filterClient) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Client does not exists!");
+  }
+
+  return filterClient;
+};
+
+// update client
+const UpdateSingleClientController = async (
+  id: string,
+  payload: Partial<ITransportVolunteer>
+) => {
+  const filterClient = await TransportVolunteerTable.findById(id);
+
+  if (!filterClient) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Client does not exists!");
+  }
+
+  const update = await TransportVolunteerTable.findByIdAndUpdate(
+    id,
+    { $set: payload },
+    { new: true, runValidators: true }
+  );
+
+  return update;
+};
+
 export const TransportVolunteerService = {
   CreateTransportVolunteerService,
   GetAllTransportVolunteerService,
   GetSingleTransportVolunteerService,
   UpdateSingleTransportVolunteerService,
+  GetAllTransportClientService,
+  GetSingleTransportClientService,
+  UpdateSingleClientController,
 };
