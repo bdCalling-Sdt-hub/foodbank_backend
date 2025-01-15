@@ -83,7 +83,7 @@ const TransportVolunteerSchema = new Schema<
 
     status: {
       type: String,
-      enum: ["client", "drive", "warehouse"],
+      enum: ["client", "driver", "warehouse"],
       trim: true,
       required: true,
     },
