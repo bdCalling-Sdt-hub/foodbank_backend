@@ -4,6 +4,7 @@ dotenv.config({ path: path.join(process.cwd(), ".env") });
 
 export default {
   port: process.env.PORT || 1000,
+  base_url: process.env.BASE_URL,
   database_url: process.env.URI,
   env: process.env.NODE_ENV,
   password_sold_round: process.env.PASSWORD_SOLD_ROUND,
@@ -14,6 +15,12 @@ export default {
 
   email: process.env.EMAIL_USER,
   appKey: process.env.EMAIL_PASS,
+  smtp_name: process.env.SMTP_NAME,
+  smtp_service: process.env.SMTP_SERVICE,
+  smtp_host: process.env.SMTP_HOST,
+  smtp_port: process.env.SMTP_PORT,
+
+
 
   frontendUrl: process.env.FRONTEND_URL,
 };
