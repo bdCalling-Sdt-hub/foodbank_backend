@@ -94,8 +94,8 @@ const TransportVolunteerSchema = new Schema<
       trim: true,
     },
     volunteerType: {
-      type: String,
-      enum: ["vip", "regular"],
+      type: Boolean,
+      default: false,
       trim: true,
     },
   },

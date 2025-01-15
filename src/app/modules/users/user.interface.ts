@@ -19,4 +19,9 @@ export type IUserMethods = {
   ): Promise<boolean>;
 };
 
+// filter user
+export type IUserFilters = {
+  searchTerm?: string;
+};
+
 export type UserModel = Model<IUser, Record<string, unknown>, IUserMethods>;

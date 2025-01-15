@@ -1,6 +1,11 @@
 import httpStatus from "http-status";
+import { SortOrder } from "mongoose";
 import ApiError from "../../../error/APIsError";
-import { IUser } from "./user.interface";
+import { paginationHelper } from "../../../helper/paginationHelper";
+import { IGenResponse } from "../../interfaces/Common";
+import { IPaginationOptions } from "../../interfaces/interfaces";
+import { KeyOfFilterForSearchTerms } from "./user.constant";
+import { IUser, IUserFilters } from "./user.interface";
 import { UserTable } from "./user.model";
 
 // create user service
@@ -36,9 +41,58 @@ const CreateUserService = async (payload: IUser): Promise<IUser | null> => {
 };
 
 // get all user service
-const GetAllUserService = async (): Promise<IUser[] | null> => {
-  const result = await UserTable.find({}).sort({ createdAt: -1 });
-  return result;
+const GetAllUserService = async (
+  filters: IUserFilters,
+  paginationOptions: IPaginationOptions
+): Promise<IGenResponse<IUser[]>> => {
+  const { searchTerm, ...searchTermData } = filters;
+
+  const andConditions = [];
+  if (searchTerm) {
+    andConditions.push({
+      $or: KeyOfFilterForSearchTerms.map((field) => ({
+        [field]: {
+          $regex: searchTerm,
+          $options: "i",
+        },
+      })),
+    });
+  }
+
+  if (Object.keys(searchTermData).length) {
+    andConditions.push({
+      $and: Object.entries(searchTermData).map(([fields, value]) => ({
+        [fields]: value,
+      })),
+    });
+  }
+
+  // pagination sort
+  const { page, limit, skip, sortBy, sortOrder } =
+    paginationHelper.paginationCalculation(paginationOptions);
+
+  const sortConditions: { [key: string]: SortOrder } = {};
+
+  if (sortBy && sortOrder) {
+    sortConditions[sortBy] = sortOrder;
+  }
+  const whereConditions = andConditions.length ? { $and: andConditions } : {};
+  const result = await UserTable.find(whereConditions)
+
+    .sort(sortConditions)
+    .limit(limit)
+    .skip(skip);
+
+  const total = await UserTable.countDocuments();
+
+  return {
+    meta: {
+      page,
+      limit,
+      total,
+    },
+    data: result,
+  };
 };
 
 // get all user service
@@ -74,9 +128,27 @@ const UpdateUserService = async (
   return updatedUser;
 };
 
+// delete user service
+const DeleteUserService = async (
+  id: string
+): Promise<Partial<IUser> | null> => {
+  if (!id) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "User ID is required!");
+  }
+
+  const result = await UserTable.findByIdAndDelete(id);
+
+  if (!result) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "User does not exits!");
+  }
+
+  return result;
+};
+
 export const UserService = {
   CreateUserService,
   GetAllUserService,
   GetSingleUserService,
   UpdateUserService,
+  DeleteUserService,
 };
