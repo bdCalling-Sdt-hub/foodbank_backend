@@ -95,7 +95,7 @@ const GetAllUserService = async (
   };
 };
 
-// get all user service
+// get single user service
 const GetSingleUserService = async (id: string): Promise<IUser | null> => {
   const user = await UserTable.findById(id);
 

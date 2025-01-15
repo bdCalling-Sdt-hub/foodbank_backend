@@ -28,6 +28,7 @@ const GetAllUserController = CatchAsync(async (req: Request, res: Response) => {
   const paginationOptions = pick(req.query, paginationFields);
 
   const result = await UserService.GetAllUserService(
+    // @ts-ignore
     filters,
     paginationOptions
   );

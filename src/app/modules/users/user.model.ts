@@ -33,6 +33,7 @@ const userSchema = new Schema<IUser, UserModel>(
       type: String,
       required: true,
       trim: true,
+      select: false,
     },
 
     profilePicture: {
