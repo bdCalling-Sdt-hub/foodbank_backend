@@ -5,13 +5,9 @@ import { TransportVolunteerTable } from "../TransportVolunteer/TransportVoluntee
 
 // ------------------CLIENT APIs endpoint------------------
 const GetAllClientService = async () => {
-  const filterClient = await TransportVolunteerTable.aggregate([
-    {
-      $match: {
-        status: "client",
-      },
-    },
-  ]);
+  const filterClient = await TransportVolunteerTable.find({
+    status: "client",
+  }).populate("ClientGroup");
 
   return filterClient;
 };

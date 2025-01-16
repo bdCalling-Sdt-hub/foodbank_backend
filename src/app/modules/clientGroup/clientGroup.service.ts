@@ -11,7 +11,7 @@ const CreateClientGroupService = async (
 
 // client group service
 const GetAllClientGroupService = async (): Promise<IClientGroup[]> => {
-  const result = await ClientGroupTable.find();
+  const result = await ClientGroupTable.find().populate("client");
   return result;
 };
 
