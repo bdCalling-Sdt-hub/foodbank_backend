@@ -44,6 +44,10 @@ const modulesRouters = [
     path: "/client-group",
     route: ClientGroupRoutes,
   },
+  {
+    path: "/events",
+    route: EventRouters,
+  },
 ];
 
 modulesRouters.forEach((route) => {
