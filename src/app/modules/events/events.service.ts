@@ -143,7 +143,6 @@ const addClients = async (req: Request) => {
 
 };
 
-
 const removeClientByEmail = async (req: Request) => {
     const { eventId } = req.query;
     const { email, type } = req.body as { email: string, type: string };
@@ -172,11 +171,6 @@ const removeClientByEmail = async (req: Request) => {
 
     return { message: `${type.charAt(0).toUpperCase() + type.slice(1)} removed successfully`, result };
 };
-
-
-
-
-
 
 
 export const EventService = {
