@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
 import httpStatus from "http-status";
+import { paginationFields } from "../../../constant/constant";
 import CatchAsync from "../../../shared/CatchAsync";
+import pick from "../../../shared/pick";
 import SendResponse from "../../../shared/SendResponse";
 import { ITransportVolunteer } from "../TransportVolunteer/TransportVolunteer.interface";
 import { ClientService } from "./clients.service";
@@ -9,7 +11,27 @@ import { ClientService } from "./clients.service";
 // Get all client
 const GetAllClientsController = CatchAsync(
   async (req: Request, res: Response) => {
-    const result = await ClientService.GetAllClientService();
+    const filters = pick(req.query, [
+      "firstName",
+      "lastName",
+      "email",
+      "holocaustSurvivor",
+      "dateOfBirth",
+      "address",
+      "apartment",
+      "city",
+      "state",
+      "zipCode",
+      "dietaryRestrictions",
+    ]);
+
+    const paginationOptions = pick(req.query, paginationFields);
+
+    const result = await ClientService
+      .GetAllClientService
+      // filters,
+      // paginationOptions
+      ();
 
     SendResponse<Partial<ITransportVolunteer[]>>(res, {
       statusCode: httpStatus.OK,

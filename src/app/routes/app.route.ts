@@ -1,5 +1,6 @@
 import express from "express";
 import { AuthRoutes } from "../modules/auth/auth.route";
+import { ClientGroupRoutes } from "../modules/clientGroup/clientGroup.route";
 import { ClientRoutes } from "../modules/clients/clients.route";
 import { DriverRoutes } from "../modules/drivers/drivers.route";
 import { EventRouters } from "../modules/events/events.route";
@@ -38,6 +39,10 @@ const modulesRouters = [
   {
     path: "/events",
     route: EventRouters,
+  },
+  {
+    path: "/client-group",
+    route: ClientGroupRoutes,
   },
 ];
 
