@@ -55,10 +55,37 @@ const deleteEvent = CatchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const addClients = CatchAsync(async (req: Request, res: Response) => {
+  const result = await EventService.addClients(req as Request);
+
+  return SendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Client added successfully!",
+    data: result,
+  });
+});
+
+const removeClientByEmail = CatchAsync(async (req: Request, res: Response) => {
+  const result = await EventService.removeClientByEmail(req as Request);
+
+  return SendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Removed successfully!",
+    data: result,
+  });
+});
+
+
+
+
 export const EventController = {
   createEventsDb,
   getEvent,
   getEvents,
   deleteEvent,
-  updateEvent
+  updateEvent,
+  addClients,
+  removeClientByEmail
 };

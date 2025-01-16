@@ -1,7 +1,10 @@
 import { Request, Response } from "express";
 import httpStatus from "http-status";
+import { paginationFields } from "../../../constant/constant";
 import CatchAsync from "../../../shared/CatchAsync";
+import pick from "../../../shared/pick";
 import SendResponse from "../../../shared/SendResponse";
+import { KeyOfFilterForFiltersKey } from "../clients/clients.constant";
 import { ITransportVolunteer } from "../TransportVolunteer/TransportVolunteer.interface";
 import { DriverService } from "./drivers.service";
 
@@ -9,13 +12,21 @@ import { DriverService } from "./drivers.service";
 // Get all driver
 const GetAllDeriverController = CatchAsync(
   async (req: Request, res: Response) => {
-    const result = await DriverService.GetAllDriverService();
+    const filters = pick(req.query, KeyOfFilterForFiltersKey);
+    const paginationOptions = pick(req.query, paginationFields);
+
+    const result = await DriverService.GetAllDriverService(
+      // @ts-ignore
+      filters,
+      paginationOptions
+    );
 
     SendResponse<Partial<ITransportVolunteer[]>>(res, {
       statusCode: httpStatus.OK,
       success: true,
       message: "Drivers get success",
-      data: result,
+      meta: result.meta,
+      data: result.data,
     });
   }
 );

@@ -1,7 +1,7 @@
-import { model, Schema } from "mongoose";
+import { model, Schema, Types } from "mongoose";
 import { IClientGroup, IClientGroupMethods } from "./clientGroup.interface";
 
-const clientGroupSchema = new Schema<IClientGroup, IClientGroupMethods>(
+export const clientGroupSchema = new Schema<IClientGroup, IClientGroupMethods>(
   {
     clientGroupName: {
       type: String,
@@ -9,12 +9,15 @@ const clientGroupSchema = new Schema<IClientGroup, IClientGroupMethods>(
       required: true,
     },
 
-    clients: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "Client",
-      },
-    ],
+    // clientMember: [
+    //   {
+    //     type: Schema.Types.ObjectId,
+    //     ref: "ClientGroups",
+    //     required: true,
+    //   },
+    // ],
+
+    clients: [{ type: Types.ObjectId, ref: "TransportVolunteer" }],
   },
   {
     timestamps: true,

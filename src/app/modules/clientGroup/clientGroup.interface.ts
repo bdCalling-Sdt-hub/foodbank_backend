@@ -3,7 +3,8 @@ import { ITransportVolunteer } from "../TransportVolunteer/TransportVolunteer.in
 
 export type IClientGroup = {
   clientGroupName: string;
-  clients: Types.Array<Schema.Types.ObjectId | ITransportVolunteer>;
+  // clientMember: Types.Array<Schema.Types.ObjectId | ITransportVolunteer>;
+  clients: Types.Array<Schema.Types.ObjectId> | ITransportVolunteer;
 };
 
 export type IClientGroupMethods = Model<IClientGroup, Record<string, unknown>>;

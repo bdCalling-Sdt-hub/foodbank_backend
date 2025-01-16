@@ -1,4 +1,4 @@
-import { model, Schema } from "mongoose";
+import { model, Schema, Types } from "mongoose";
 import {
   ITransportVolunteer,
   TransportVolunteerMethods,
@@ -104,7 +104,9 @@ const TransportVolunteerSchema = new Schema<
       default: false,
       trim: true,
     },
+    meetings: [{ type: Types.ObjectId, ref: "ClientGroups" }],
   },
+
   {
     timestamps: true,
     toJSON: {
@@ -116,4 +118,4 @@ const TransportVolunteerSchema = new Schema<
 export const TransportVolunteerTable = model<
   ITransportVolunteer,
   TransportVolunteerMethods
->("transportVolunteers", TransportVolunteerSchema);
+>("TransportVolunteers", TransportVolunteerSchema);

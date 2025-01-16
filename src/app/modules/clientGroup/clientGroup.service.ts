@@ -1,3 +1,4 @@
+import { TransportVolunteerTable } from "../TransportVolunteer/TransportVolunteer.model";
 import { IClientGroup } from "./clientGroup.interface";
 import { ClientGroupTable } from "./clientGroup.model";
 
@@ -5,13 +6,21 @@ import { ClientGroupTable } from "./clientGroup.model";
 const CreateClientGroupService = async (
   payload: IClientGroup
 ): Promise<IClientGroup> => {
-  const result = await ClientGroupTable.create(payload);
-  return result;
+  console.log(payload);
+  const meetings = await ClientGroupTable.create(payload);
+
+  // Add this meeting to each client's `meetings` field
+  await TransportVolunteerTable.updateMany(
+    { _id: { $in: payload.clients } },
+    { $push: { meetings: meetings._id } }
+  );
+
+  return meetings;
 };
 
 // client group service
 const GetAllClientGroupService = async (): Promise<IClientGroup[]> => {
-  const result = await ClientGroupTable.find().populate("client");
+  const result = await ClientGroupTable.find();
   return result;
 };
 

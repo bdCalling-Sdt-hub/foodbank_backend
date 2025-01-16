@@ -1,0 +1,30 @@
+export const KeyOfFilterForClientSearchTerm = [
+  "firstName",
+  "lastName",
+  "email",
+  "holocaustSurvivor",
+  "dateOfBirth",
+  "address",
+  "apartment",
+  "city",
+  "state",
+  "zipCode",
+  "dietaryRestrictions",
+  "status",
+];
+
+export const KeyOfFilterForFiltersKey = [
+  "searchTerm",
+  "firstName",
+  "lastName",
+  "email",
+  "holocaustSurvivor",
+  "dateOfBirth",
+  "address",
+  "apartment",
+  "city",
+  "state",
+  "zipCode",
+  "dietaryRestrictions",
+  "status",
+];

@@ -5,39 +5,28 @@ import CatchAsync from "../../../shared/CatchAsync";
 import pick from "../../../shared/pick";
 import SendResponse from "../../../shared/SendResponse";
 import { ITransportVolunteer } from "../TransportVolunteer/TransportVolunteer.interface";
+import { KeyOfFilterForFiltersKey } from "./clients.constant";
 import { ClientService } from "./clients.service";
 
 // ------------------CLIENT APIs endpoint------------------
 // Get all client
 const GetAllClientsController = CatchAsync(
   async (req: Request, res: Response) => {
-    const filters = pick(req.query, [
-      "firstName",
-      "lastName",
-      "email",
-      "holocaustSurvivor",
-      "dateOfBirth",
-      "address",
-      "apartment",
-      "city",
-      "state",
-      "zipCode",
-      "dietaryRestrictions",
-    ]);
-
+    const filters = pick(req.query, KeyOfFilterForFiltersKey);
     const paginationOptions = pick(req.query, paginationFields);
 
-    const result = await ClientService
-      .GetAllClientService
-      // filters,
-      // paginationOptions
-      ();
+    const result = await ClientService.GetAllClientService(
+      // @ts-ignore
+      filters,
+      paginationOptions
+    );
 
     SendResponse<Partial<ITransportVolunteer[]>>(res, {
       statusCode: httpStatus.OK,
       success: true,
       message: "Clients get success",
-      data: result,
+      meta: result.meta,
+      data: result.data,
     });
   }
 );

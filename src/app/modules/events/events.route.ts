@@ -11,7 +11,7 @@ router.post(
 )
   .get(
     "/get-all",
-    //   AuthProvider.Auth(ENUM_USER_ROLE.SUPER_ADMIN),
+    // AuthProvider.Auth(ENUM_USER_ROLE.SUPER_ADMIN),
     EventController.getEvents
   )
   .get(
@@ -29,5 +29,18 @@ router.post(
     //   AuthProvider.Auth(ENUM_USER_ROLE.SUPER_ADMIN),
     EventController.deleteEvent
   )
+  .patch(
+    "/add-clients",
+    //   AuthProvider.Auth(ENUM_USER_ROLE.SUPER_ADMIN),
+    EventController.addClients
+  )
+
+  .patch(
+    "/remove-clients",
+    //   AuthProvider.Auth(ENUM_USER_ROLE.SUPER_ADMIN),
+    EventController.removeClientByEmail
+  )
+
+
 
 export const EventRouters = router;

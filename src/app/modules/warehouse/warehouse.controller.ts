@@ -1,7 +1,10 @@
 import { Request, Response } from "express";
 import httpStatus from "http-status";
+import { paginationFields } from "../../../constant/constant";
 import CatchAsync from "../../../shared/CatchAsync";
+import pick from "../../../shared/pick";
 import SendResponse from "../../../shared/SendResponse";
+import { KeyOfFilterForFiltersKey } from "../clients/clients.constant";
 import { ITransportVolunteer } from "../TransportVolunteer/TransportVolunteer.interface";
 import { WarehouseService } from "./warehouse.service";
 
@@ -9,13 +12,21 @@ import { WarehouseService } from "./warehouse.service";
 // Get all Warehouse
 const GetAllWarehouseController = CatchAsync(
   async (req: Request, res: Response) => {
-    const result = await WarehouseService.GetAllWarehouseService();
+    const filters = pick(req.query, KeyOfFilterForFiltersKey);
+    const paginationOptions = pick(req.query, paginationFields);
+
+    const result = await WarehouseService.GetAllWarehouseService(
+      // @ts-ignore
+      filters,
+      paginationOptions
+    );
 
     SendResponse<Partial<ITransportVolunteer[]>>(res, {
       statusCode: httpStatus.OK,
       success: true,
       message: "Warehouse get success",
-      data: result,
+      meta: result.meta,
+      data: result.data,
     });
   }
 );
