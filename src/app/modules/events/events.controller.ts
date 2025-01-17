@@ -26,7 +26,7 @@ const getEvent = CatchAsync(async (req: Request, res: Response) => {
 });
 
 const getEvents = CatchAsync(async (req: Request, res: Response) => {
-  const result = await EventService.getEvents();
+  const result = await EventService.getEvents(req as Request);
   SendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -77,6 +77,47 @@ const removeClientByEmail = CatchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const addGroupUpdate = CatchAsync(async (req: Request, res: Response) => {
+  const result = await EventService.addGroupUpdate(req.body as IGroupRequest);
+
+  return SendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Added successfully!",
+    data: result,
+  });
+
+})
+
+const removeGroupUpdate = CatchAsync(async (req: Request, res: Response) => {
+  const result = await EventService.removeGroupUpdate(req.body as IGroupRequest);
+  return SendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Removed successfully!",
+    data: result,
+  });
+})
+
+const getEventsGroups = CatchAsync(async (req: Request, res: Response) => {
+
+  const query: IGetGroups = {
+    eventId: req.query.eventId as string,
+    page: parseInt(req.query.page as string, 10) || 1,
+    limit: parseInt(req.query.limit as string, 10) || 10,
+    searchQuery: req.query.searchQuery as string || "",
+    type: req.query.type as string
+  };
+
+  const result = await EventService.getEventsGroups(query);
+  return SendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Removed successfully!",
+    data: result,
+  });
+})
+
 
 
 
@@ -87,5 +128,8 @@ export const EventController = {
   deleteEvent,
   updateEvent,
   addClients,
-  removeClientByEmail
+  removeClientByEmail,
+  addGroupUpdate,
+  removeGroupUpdate,
+  getEventsGroups
 };

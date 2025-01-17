@@ -10,6 +10,11 @@ interface IUserObj {
   accept: boolean;
 }
 
+interface IGroup {
+  gid: Schema.Types.ObjectId;
+  type: string;
+}
+
 const UserObjSchema = new Schema<IUserObj>({
   userId: {
     type: Schema.Types.ObjectId,
@@ -20,6 +25,20 @@ const UserObjSchema = new Schema<IUserObj>({
   accept: { type: Boolean, default: false },
 });
 
+
+const groupObject = new Schema<IGroup>({
+  gid: {
+    type: Schema.Types.ObjectId,
+    ref: "clientgroups",
+  },
+  type: {
+    type: String,
+    enum: ["client", "warehouse", "driver"],
+    required: true
+  }
+
+});
+
 const EventSchema = new Schema<IEvents>({
   eventName: {
     type: String,
@@ -27,8 +46,11 @@ const EventSchema = new Schema<IEvents>({
   },
   eventType: {
     type: String,
-    enum: ["wed", "birthday"],
-    required: true
+    enum: {
+      values: ["wed", "birthday"],
+      message: "{VALUE} is not a valid event type"
+    },
+    required: [true, "Event type is required"]
   },
   location: {
     type: String,
@@ -43,7 +65,7 @@ const EventSchema = new Schema<IEvents>({
     required: true
   },
   dayOfEvent: {
-    type: String,
+    type: Date,
     required: true
   },
   startOfEvent: {
@@ -74,6 +96,7 @@ const EventSchema = new Schema<IEvents>({
     type: [UserObjSchema],
     default: []
   },
+  groups: [groupObject]
 });
 
 // Exporting the Model

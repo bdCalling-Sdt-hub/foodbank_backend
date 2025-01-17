@@ -7,14 +7,15 @@ import { TransportVolunteerTable } from "../TransportVolunteer/TransportVoluntee
 import sendUserRequest from "../../../mail/sendUserRequest";
 import { sendUserRequestBody } from "../../../mail/sendUserRequestBody";
 import Config from "../../../config/Config";
+import mongoose from "mongoose";
 
 const createEvent = async (payload: IEvents): Promise<IEvents | null> => {
     try {
         const result = await Events.create(payload);
         return result;
-    } catch (error) {
+    } catch (error: any) {
         console.error("Error creating event:", error);
-        throw new ApiError(httpStatus.BAD_REQUEST, "Failed to create event");
+        throw new ApiError(httpStatus.BAD_REQUEST, error.message);
     }
 };
 
@@ -32,10 +33,59 @@ const getEvent = async (req: Request) => {
     }
 };
 
-const getEvents = async () => {
+const getEvents = async (req: Request) => {
     try {
-        const result = await Events.find({});
-        return result;
+        const { eventType, filterType, searchQuery, sortField = "dayOfEvent", sortOrder = "asc", page = 1, limit = 10 } = req.query;
+
+        // console.log("all events", eventType, filterType, searchQuery, sortField);
+
+        const query: any = {};
+        if (eventType) {
+            query.eventType = eventType;
+        }
+
+        if (filterType) {
+            const currentDate = new Date();
+            console.log("date", currentDate);
+            if (filterType === "upcoming") {
+                query.dayOfEvent = { $gt: currentDate };
+            } else if (filterType === "today") {
+                const startOfDay = new Date(currentDate.setHours(0, 0, 0, 0));
+                const endOfDay = new Date(currentDate.setHours(23, 59, 59, 999));
+                query.dayOfEvent = { $gte: startOfDay, $lte: endOfDay };
+            } else if (filterType === "previous") {
+                query.dayOfEvent = { $lt: currentDate };
+            }
+        }
+
+        if (searchQuery) {
+            query.eventName = { $regex: searchQuery, $options: "i" };
+        }
+
+        const sort: any = {};
+        //@ts-ignore
+        sort[sortField] = sortOrder === "desc" ? -1 : 1;
+
+        const pageNumber = Math.max(1, parseInt(page as string, 10));
+        const pageLimit = Math.max(1, parseInt(limit as string, 10));
+        const skip = (pageNumber - 1) * pageLimit;
+
+        const result = await Events.find(query)
+            .sort(sort)
+            .skip(skip)
+            .limit(pageLimit);
+
+        const totalCount = await Events.countDocuments(query);
+
+        return {
+            data: result,
+            meta: {
+                totalCount,
+                currentPage: pageNumber,
+                totalPages: Math.ceil(totalCount / pageLimit),
+                pageLimit,
+            },
+        };
     } catch (error) {
         const message = error instanceof Error ? error.message : "Unknown error";
         throw new ApiError(httpStatus.BAD_REQUEST, message);
@@ -114,30 +164,33 @@ const addClients = async (req: Request) => {
     }
 
     const updateField = type === 'client' ? 'client' : type === 'warehouse' ? 'warehouse' : 'driver';
+    const accept = type === 'client' ? true : false;
     const result = await Events.findByIdAndUpdate(
         eventId,
-        { $push: { [updateField]: { userId, email } } },
+        { $push: { [updateField]: { userId, email, accept } } },
         { new: true, runValidators: true }
     );
 
     // Send email request
-    await sendUserRequest({
-        email,
-        subject: 'Events Request',
-        html: sendUserRequestBody({
+    if (!accept) {
+        await sendUserRequest({
             email,
-            name: `${userDb.firstName} ${userDb.lastName}`,
-            url: `http://${Config.base_url}:${Config.port}/api/v1/events/accept-request/${eventId}/${userId}`,
-            frontend_url: 'http://10.0.60.118:7000/accept-request',
-            type: typeOfUser,
-            event_name: eventDb.eventName,
-            event_type: eventDb.eventType,
-            event_location: eventDb.location,
-            event_day_of_event: eventDb.dayOfEvent,
-            event_start_of_event: eventDb.startOfEvent,
-            event_end_of_event: eventDb.endOfEvent,
-        }),
-    });
+            subject: 'Events Request',
+            html: sendUserRequestBody({
+                email,
+                name: `${userDb.firstName} ${userDb.lastName}`,
+                url: `http://${Config.base_url}:${Config.port}/api/v1/events/accept-request/events/${eventId}/user/${userId}/types/${updateField}`,
+                frontend_url: 'http://10.0.60.118:7000/accept-request',
+                type: typeOfUser,
+                event_name: eventDb.eventName,
+                event_type: eventDb.eventType,
+                event_location: eventDb.location,
+                event_day_of_event: eventDb.dayOfEvent,
+                event_start_of_event: eventDb.startOfEvent,
+                event_end_of_event: eventDb.endOfEvent,
+            }),
+        });
+    }
 
     return { message: "Client added successfully", result };
 
@@ -172,6 +225,232 @@ const removeClientByEmail = async (req: Request) => {
     return { message: `${type.charAt(0).toUpperCase() + type.slice(1)} removed successfully`, result };
 };
 
+const addGroupUpdate = async (payload: { groupId: string; eventId: string; types: string }) => {
+    try {
+        const { groupId, eventId, types } = payload;
+
+        if (!groupId || !eventId || !types) {
+            throw new ApiError(httpStatus.BAD_REQUEST, "Missing required parameters.");
+        }
+
+        const eventDb = await Events.findById(eventId) as IEvents;
+        if (!eventDb) {
+            throw new ApiError(httpStatus.NOT_FOUND, "Event not found");
+        }
+
+        const existingClient = eventDb.groups.find(
+            (client) => client.gid.toString() === groupId && client.type === types
+        );
+
+        if (existingClient) {
+            throw new ApiError(httpStatus.CONFLICT, `${types} with this groupId already exists.`);
+        }
+
+        const objectIdGroupId = new mongoose.Types.ObjectId(groupId);
+        const result = await Events.findByIdAndUpdate(
+            eventId,
+            { $push: { groups: { gid: objectIdGroupId, type: types } } },
+            { new: true, runValidators: true }
+        );
+
+        return { message: "Group update added successfully", result };
+    } catch (error: any) {
+        console.error("Failed to add group update:", error);
+        throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message);
+    }
+};
+
+const removeGroupUpdate = async (payload: { groupId: string; eventId: string; types: string }) => {
+    try {
+        const { groupId, eventId, types } = payload;
+
+
+        if (!groupId || !eventId || !types) {
+            throw new ApiError(httpStatus.BAD_REQUEST, "Missing required parameters.");
+        }
+
+        if (!mongoose.Types.ObjectId.isValid(groupId)) {
+            throw new ApiError(httpStatus.BAD_REQUEST, "Invalid groupId.");
+        }
+        const objectIdGroupId = new mongoose.Types.ObjectId(groupId);
+
+
+        const eventDb = await Events.findById(eventId);
+        if (!eventDb) {
+            throw new ApiError(httpStatus.NOT_FOUND, "Event not found.");
+        }
+
+
+        const existingGroup = eventDb.groups.find(
+            (group) => group.gid.toString() === groupId && group.type === types
+        );
+
+        if (!existingGroup) {
+            throw new ApiError(httpStatus.NOT_FOUND, "Group not found in event.");
+        }
+
+        const result = await Events.findByIdAndUpdate(
+            eventId,
+            { $pull: { groups: { gid: objectIdGroupId, type: types } } },
+            { new: true, runValidators: true }
+        );
+
+        return { message: "Group removed successfully", result };
+    } catch (error: any) {
+        console.error(
+            `Failed to remove group update for eventId: ${payload.eventId}, payload: ${JSON.stringify(payload)}`,
+            error.message
+        );
+        throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, "Failed to remove group update");
+    }
+};
+
+const getEventsGroups = async (payload: IGetGroups) => {
+    try {
+        const { type, eventId, page = 1, limit = 10, searchQuery = "" } = payload as IGetGroups;
+
+        const validTypes = ["client", "driver", "warehouse"];
+        if (!validTypes.includes(type)) {
+            throw new ApiError(httpStatus.BAD_REQUEST, "Invalid type parameter.");
+        }
+        if (!mongoose.Types.ObjectId.isValid(eventId)) {
+            throw new ApiError(httpStatus.BAD_REQUEST, "Invalid eventId.");
+        }
+
+        const objectIdEventId = new mongoose.Types.ObjectId(eventId);
+        const skip = (page - 1) * limit;
+
+        const result = await Events.aggregate([
+            // Match event by ID
+            {
+                $match: {
+                    _id: objectIdEventId,
+                },
+            },
+            // Filter groups by type
+            {
+                $project: {
+                    _id: 0,
+                    filteredGroups: {
+                        $filter: {
+                            input: "$groups",
+                            as: "group",
+                            cond: { $eq: ["$$group.type", type] },
+                        },
+                    },
+                },
+            },
+            // Unwind the filteredGroups array
+            {
+                $unwind: "$filteredGroups",
+            },
+            // Lookup gid from clientgroups collection
+            {
+                $lookup: {
+                    from: "clientgroups",
+                    localField: "filteredGroups.gid",
+                    foreignField: "_id",
+                    as: "filteredGroups.gid",
+                },
+            },
+            // Unwind gid after lookup
+            {
+                $unwind: "$filteredGroups.gid",
+            },
+            // Optionally filter by clientGroupName
+            ...(searchQuery
+                ? [
+                    {
+                        $match: {
+                            "filteredGroups.gid.clientGroupName": {
+                                $regex: searchQuery,
+                                $options: "i",
+                            },
+                        },
+                    },
+                ]
+                : []),
+            // Exclude unwanted fields from gid
+            {
+                $project: {
+                    "filteredGroups.gid.clients": 0,
+                    "filteredGroups.gid.createdAt": 0,
+                    "filteredGroups.gid.updatedAt": 0,
+                    "filteredGroups.gid.__v": 0,
+                },
+            },
+            // Reconstruct the groups array
+            {
+                $group: {
+                    _id: null,
+                    groups: { $push: "$filteredGroups" },
+                },
+            },
+            // Apply pagination
+            {
+                $project: {
+                    groups: { $slice: ["$groups", skip, limit] },
+                },
+            },
+        ]);
+
+        // Get total count of matching groups
+        const totalResult = await Events.aggregate([
+            {
+                $match: {
+                    _id: objectIdEventId,
+                },
+            },
+            {
+                $project: {
+                    _id: 0,
+                    totalGroups: {
+                        $size: {
+                            $filter: {
+                                input: "$groups",
+                                as: "group",
+                                cond: { $eq: ["$$group.type", type] },
+                            },
+                        },
+                    },
+                },
+            },
+            ...(searchQuery
+                ? [
+                    {
+                        $match: {
+                            "filteredGroups.gid.clientGroupName": {
+                                $regex: searchQuery,
+                                $options: "i",
+                            },
+                        },
+                    },
+                ]
+                : []),
+        ]);
+
+        const totalGroups = totalResult.length > 0 ? totalResult[0].totalGroups : 0;
+
+        return {
+            data: result.length > 0 ? result[0].groups : [],
+            meta: {
+                currentPage: page,
+                totalPages: Math.ceil(totalGroups / limit),
+                totalGroups,
+                pageLimit: limit,
+            },
+        };
+    } catch (error) {
+        console.error("Error fetching groups:", error);
+        throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, "Failed to fetch groups.");
+    }
+};
+
+
+
+
+
+
 
 export const EventService = {
     createEvent,
@@ -180,5 +459,8 @@ export const EventService = {
     updateEvent,
     deleteEvent,
     addClients,
-    removeClientByEmail
+    removeClientByEmail,
+    addGroupUpdate,
+    removeGroupUpdate,
+    getEventsGroups
 };
