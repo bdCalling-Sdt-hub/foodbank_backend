@@ -321,13 +321,11 @@ const getEventsGroups = async (payload: IGetGroups) => {
         const skip = (page - 1) * limit;
 
         const result = await Events.aggregate([
-            // Match event by ID
             {
                 $match: {
                     _id: objectIdEventId,
                 },
             },
-            // Filter groups by type
             {
                 $project: {
                     _id: 0,
@@ -340,11 +338,9 @@ const getEventsGroups = async (payload: IGetGroups) => {
                     },
                 },
             },
-            // Unwind the filteredGroups array
             {
                 $unwind: "$filteredGroups",
             },
-            // Lookup gid from clientgroups collection
             {
                 $lookup: {
                     from: "clientgroups",
@@ -353,11 +349,9 @@ const getEventsGroups = async (payload: IGetGroups) => {
                     as: "filteredGroups.gid",
                 },
             },
-            // Unwind gid after lookup
             {
                 $unwind: "$filteredGroups.gid",
             },
-            // Optionally filter by clientGroupName
             ...(searchQuery
                 ? [
                     {
@@ -370,7 +364,6 @@ const getEventsGroups = async (payload: IGetGroups) => {
                     },
                 ]
                 : []),
-            // Exclude unwanted fields from gid
             {
                 $project: {
                     "filteredGroups.gid.clients": 0,
@@ -379,14 +372,12 @@ const getEventsGroups = async (payload: IGetGroups) => {
                     "filteredGroups.gid.__v": 0,
                 },
             },
-            // Reconstruct the groups array
             {
                 $group: {
                     _id: null,
                     groups: { $push: "$filteredGroups" },
                 },
             },
-            // Apply pagination
             {
                 $project: {
                     groups: { $slice: ["$groups", skip, limit] },
@@ -394,7 +385,6 @@ const getEventsGroups = async (payload: IGetGroups) => {
             },
         ]);
 
-        // Get total count of matching groups
         const totalResult = await Events.aggregate([
             {
                 $match: {
@@ -445,11 +435,6 @@ const getEventsGroups = async (payload: IGetGroups) => {
         throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, "Failed to fetch groups.");
     }
 };
-
-
-
-
-
 
 
 export const EventService = {
