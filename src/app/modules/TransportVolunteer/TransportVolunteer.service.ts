@@ -57,7 +57,7 @@ const GetAllTransportVolunteerService = async (
   }
   const whereConditions = andConditions.length ? { $and: andConditions } : {};
   const result = await TransportVolunteerTable.find(whereConditions)
-
+    .populate("meetings")
     .sort(sortConditions)
     .limit(limit)
     .skip(skip);
@@ -78,7 +78,9 @@ const GetAllTransportVolunteerService = async (
 const GetSingleTransportVolunteerService = async (
   id: string
 ): Promise<ITransportVolunteer | null> => {
-  const result = await TransportVolunteerTable.findById(id);
+  const result = await TransportVolunteerTable.findById(id).populate(
+    "meetings"
+  );
 
   if (!result) {
     throw new ApiError(httpStatus.NOT_FOUND, "Invalid volunteer!");

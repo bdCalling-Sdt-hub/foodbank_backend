@@ -27,6 +27,7 @@ export type ITransportVolunteer = {
   volunteerRole?: IVolunteerRole; // "driver" | "warehouse" | "both";
   status: IStatus; // "client" | "drive" | "warehouse";
   meetings?: [string];
+  volunteers?: [string];
 };
 
 export type TransportVolunteerMethods = Model<

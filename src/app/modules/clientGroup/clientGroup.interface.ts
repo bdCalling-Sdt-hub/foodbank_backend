@@ -8,3 +8,8 @@ export type IClientGroup = {
 };
 
 export type IClientGroupMethods = Model<IClientGroup, Record<string, unknown>>;
+
+export type IClientGroupFilters = {
+  searchTerm?: string;
+  clientGroupName: string;
+};

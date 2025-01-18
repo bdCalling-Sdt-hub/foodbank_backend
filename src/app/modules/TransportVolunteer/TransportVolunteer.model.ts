@@ -105,6 +105,7 @@ const TransportVolunteerSchema = new Schema<
       trim: true,
     },
     meetings: [{ type: Types.ObjectId, ref: "ClientGroups" }],
+    volunteers: [{ type: Types.ObjectId, ref: "VolunteerGroupTables" }],
   },
 
   {

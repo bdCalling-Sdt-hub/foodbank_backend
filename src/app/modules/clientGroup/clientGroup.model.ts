@@ -17,7 +17,7 @@ export const clientGroupSchema = new Schema<IClientGroup, IClientGroupMethods>(
     //   },
     // ],
 
-    clients: [{ type: Types.ObjectId, ref: "TransportVolunteer" }],
+    clients: [{ type: Types.ObjectId, ref: "TransportVolunteers" }],
   },
   {
     timestamps: true,

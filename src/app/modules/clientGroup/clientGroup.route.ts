@@ -8,5 +8,7 @@ router.post(
   ClientController.CreateClientGroupController
 );
 router.get("/", ClientController.GetAllClientGroupController);
+router.patch("/:id", ClientController.UpdateClientGroupController);
+router.get("/:id", ClientController.GetSingleClientGroupController);
 
 export const ClientGroupRoutes = router;

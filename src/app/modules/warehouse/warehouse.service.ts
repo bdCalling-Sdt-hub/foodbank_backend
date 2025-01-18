@@ -68,24 +68,15 @@ const GetAllWarehouseService = async (
     },
     data: result,
   };
-
-  // const warehouse = await TransportVolunteerTable.find({
-  //   status: "warehouse",
-  // }).populate("meetings");
-
-  // const total = await TransportVolunteerTable.countDocuments({
-  //   status: "warehouse",
-  // });
-  // console.log({ total });
-
-  // return warehouse;
 };
 
 // get single Warehouse
 const GetSingleWarehouseService = async (
   id: string
 ): Promise<Partial<ITransportVolunteer>> => {
-  const warehouse = await TransportVolunteerTable.findById(id);
+  const warehouse = await TransportVolunteerTable.findById(id).populate(
+    "meetings"
+  );
 
   if (!warehouse) {
     throw new ApiError(httpStatus.NOT_FOUND, "Client does not exists!");
