@@ -34,12 +34,30 @@ router.post(
     //   AuthProvider.Auth(ENUM_USER_ROLE.SUPER_ADMIN),
     EventController.addClients
   )
-
+  .patch(
+    "/add-groups",
+    //   AuthProvider.Auth(ENUM_USER_ROLE.SUPER_ADMIN),
+    EventController.addGroupUpdate
+  )
+  .patch(
+    "/remove-groups",
+    //   AuthProvider.Auth(ENUM_USER_ROLE.SUPER_ADMIN),
+    EventController.removeGroupUpdate
+  )
   .patch(
     "/remove-clients",
     //   AuthProvider.Auth(ENUM_USER_ROLE.SUPER_ADMIN),
     EventController.removeClientByEmail
   )
+  .get(
+    "/get-groups",
+    //   AuthProvider.Auth(ENUM_USER_ROLE.SUPER_ADMIN),
+    EventController.getEventsGroups
+  )
+
+
+
+
 
 
 

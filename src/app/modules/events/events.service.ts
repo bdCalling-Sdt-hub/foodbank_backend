@@ -4,8 +4,6 @@ import Config from "../../../config/Config";
 import ApiError from "../../../error/APIsError";
 import sendUserRequest from "../../../mail/sendUserRequest";
 import { sendUserRequestBody } from "../../../mail/sendUserRequestBody";
-import { TransportVolunteerTable } from "../TransportVolunteer/TransportVolunteer.model";
-import Events from "./events.model";
 
 const createEvent = async (payload: IEvents): Promise<IEvents | null> => {
   try {
