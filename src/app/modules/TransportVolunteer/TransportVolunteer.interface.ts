@@ -23,7 +23,7 @@ export type ITransportVolunteer = {
   email?: string;
 
   // volunteer unique fields
-  volunteerType?: boolean;
+  volunteerType?: boolean; // vip | regular
   volunteerRole?: IVolunteerRole; // "driver" | "warehouse" | "both";
   status: IStatus; // "client" | "drive" | "warehouse";
   meetings?: [string];

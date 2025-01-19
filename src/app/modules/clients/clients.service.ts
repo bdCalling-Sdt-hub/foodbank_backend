@@ -4,8 +4,10 @@ import ApiError from "../../../error/APIsError";
 import { paginationHelper } from "../../../helper/paginationHelper";
 import { IGenResponse } from "../../interfaces/Common";
 import { IPaginationOptions } from "../../interfaces/interfaces";
+import { ClientGroupTable } from "../clientGroup/clientGroup.model";
 import { ITransportVolunteer } from "../TransportVolunteer/TransportVolunteer.interface";
 import { TransportVolunteerTable } from "../TransportVolunteer/TransportVolunteer.model";
+import { VolunteerGroupT } from "../volunteerGroup/volunteerGroup.model";
 import { KeyOfFilterForClientSearchTerm } from "./clients.constant";
 import { IClientFilterKey } from "./clients.interface";
 
@@ -74,7 +76,9 @@ const GetAllClientService = async (
 
 // single client get
 const GetSingleTransportClientService = async (id: string) => {
-  const filterClient = await TransportVolunteerTable.findById(id);
+  const filterClient = await TransportVolunteerTable.findById(id).populate(
+    "meetings"
+  );
 
   if (!filterClient) {
     throw new ApiError(httpStatus.NOT_FOUND, "Client does not exists!");
@@ -103,8 +107,41 @@ const UpdateSingleClientService = async (
   return update;
 };
 
+// delete client
+const DeleteSingleClientService = async (id: string) => {
+  const filterClient = await TransportVolunteerTable.findById(id);
+
+  if (!filterClient) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Client does not exists!");
+  }
+
+  const isIncludeClientGroup = await ClientGroupTable.findOne({
+    clients: { _id: id },
+  });
+  const isIncludeVolunteerGroup = await VolunteerGroupT.findOne({
+    volunteers: { _id: id },
+  });
+
+  // console.log({ isIncludeClientGroup, isIncludeVolunteerGroup });
+
+  if (isIncludeClientGroup || isIncludeVolunteerGroup) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      "The volunteer already attended the meeting."
+    );
+  }
+
+  const update = await TransportVolunteerTable.findByIdAndDelete(id, {
+    new: true,
+    runValidators: true,
+  });
+
+  return update;
+};
+
 export const ClientService = {
   GetAllClientService,
   GetSingleTransportClientService,
   UpdateSingleClientService,
+  DeleteSingleClientService,
 };

@@ -64,8 +64,25 @@ const UpdateSingleClientController = CatchAsync(
   }
 );
 
+// delete single client
+const DeleteSingleClientController = CatchAsync(
+  async (req: Request, res: Response) => {
+    const { id } = req.params;
+
+    const result = await ClientService.DeleteSingleClientService(id);
+
+    SendResponse<Partial<ITransportVolunteer>>(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Client deleted success!",
+      data: result,
+    });
+  }
+);
+
 export const ClientController = {
   GetAllClientsController,
   GetSingleClientController,
   UpdateSingleClientController,
+  DeleteSingleClientController,
 };

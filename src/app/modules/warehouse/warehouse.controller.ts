@@ -64,9 +64,25 @@ const UpdateSingleWarehouseController = CatchAsync(
     });
   }
 );
+//delete Warehouse
+const DeleteSingleWarehouseController = CatchAsync(
+  async (req: Request, res: Response) => {
+    const { id } = req.params;
+
+    const result = await WarehouseService.DeleteSingleWarehouseService(id);
+
+    SendResponse<Partial<ITransportVolunteer>>(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Warehouse deleted success!",
+      data: result,
+    });
+  }
+);
 
 export const WarehouseController = {
   GetAllWarehouseController,
   GetSingleWarehouseController,
   UpdateSingleWarehouseController,
+  DeleteSingleWarehouseController,
 };

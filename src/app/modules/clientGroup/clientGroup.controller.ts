@@ -84,10 +84,26 @@ const UpdateClientGroupController = CatchAsync(
     });
   }
 );
+// delete client group
+const DeleteSingleClientGroupController = CatchAsync(
+  async (req: Request, res: Response) => {
+    const { id } = req.params;
+
+    const result = await ClientGroupService.DeleteClientGroupService(id);
+
+    SendResponse<Partial<IClientGroup> | null>(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Client group deleted success!",
+      data: result,
+    });
+  }
+);
 
 export const ClientController = {
   CreateClientGroupController,
   GetAllClientGroupController,
   UpdateClientGroupController,
   GetSingleClientGroupController,
+  DeleteSingleClientGroupController,
 };

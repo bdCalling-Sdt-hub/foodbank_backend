@@ -9,6 +9,9 @@ export type IUser = {
   role: "super_admin" | "admin";
   profilePicture?: string;
   status?: boolean;
+  resetOTP?: string;
+  otpExpiry?: number;
+  isCheckOTP?: string;
 };
 
 export type IUserMethods = {

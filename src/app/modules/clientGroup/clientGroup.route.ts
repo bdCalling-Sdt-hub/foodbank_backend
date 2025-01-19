@@ -10,5 +10,6 @@ router.post(
 router.get("/", ClientController.GetAllClientGroupController);
 router.patch("/:id", ClientController.UpdateClientGroupController);
 router.get("/:id", ClientController.GetSingleClientGroupController);
+router.delete("/:id", ClientController.DeleteSingleClientGroupController);
 
 export const ClientGroupRoutes = router;

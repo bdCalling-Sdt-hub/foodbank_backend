@@ -3,7 +3,6 @@ import { ITransportVolunteer } from "../TransportVolunteer/TransportVolunteer.in
 
 export type IClientGroup = {
   clientGroupName: string;
-  // clientMember: Types.Array<Schema.Types.ObjectId | ITransportVolunteer>;
   clients: Types.Array<Schema.Types.ObjectId> | ITransportVolunteer;
 };
 

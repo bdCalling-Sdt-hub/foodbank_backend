@@ -9,8 +9,10 @@ import { MailSend } from "../../../mail/mailSend";
 import {
   IChangePassword,
   IForgot,
+  IOTP,
   IResetPassword,
 } from "../../../types/common";
+import { generateOTP } from "../../../utils/OTP";
 import { UserTable } from "../users/user.model";
 import {
   IAuthLoginTypes,
@@ -137,67 +139,160 @@ const ChangePasswordService = async (payload: IChangePassword) => {
 const forgotPasswordService = async (payload: IForgot) => {
   const { email } = payload;
 
-  // Find the user by id
-  const user = await UserTable.findOne(
-    { email },
-    { firstName: 1, role: 1, _id: 1, email: 1 }
-  );
+  // Find user in the database
+  const existUser = await UserTable.findOne({ email });
+  if (!existUser) {
+    throw new ApiError(httpStatus.NOT_FOUND, "User not found");
+  }
 
-  if (!user) {
+  // Check if OTP is already generated and expired
+  const currentTime = new Date().getTime();
+  if (existUser.resetOTP && currentTime < existUser.otpExpiry!) {
     throw new ApiError(
       httpStatus.BAD_REQUEST,
-      "User with this email does not exist!"
+      "OTP already sent and is valid. Please check your email."
     );
   }
 
-  // Create a password reset token
-  const resetTokenPassword = jwtTokenProvider.resetToken(
-    { id: user?._id },
-    Config.refresh_key as Secret,
-    "5m" as string
+  // Generate a new OTP since either no OTP exists or OTP has expired
+  const otp = generateOTP();
+  const otpExpiry = currentTime + 5 * 60 * 1000; // 5 minutes expiry time
+
+  // Update the user with the new OTP and expiry time
+  await UserTable.updateOne(
+    { email },
+    {
+      resetOTP: otp,
+      otpExpiry: otpExpiry,
+    }
   );
 
-  // console.log(resetTokenPassword);
-
-  const resetLink = `${Config.frontendUrl}?token=${resetTokenPassword}`;
-
-  // send mail in user
-  MailSend(user, resetLink);
-
-  return {
-    resetLink,
-    user,
+  const mailData = {
+    otp,
+    ...existUser.toObject(),
   };
+
+  // Send OTP email
+  MailSend(mailData);
+
+  return { message: "OTP has been sent to your email." };
 };
 
 // reset password
-const resetPasswordService = async (payload: IResetPassword, token: string) => {
+const resetPasswordService = async (payload: IResetPassword) => {
   const { email, resetPassword } = payload;
 
-  // Find the user by id
-  const user = await UserTable.findOne(
-    { email },
-    { role: 1, _id: 1, email: 1 }
-  );
+  // Find the user from the database
+  // Step 1: Verify OTP
+  const existUser = await UserTable.findOne({ email });
+  if (!existUser) {
+    throw new ApiError(httpStatus.NOT_FOUND, "User not found");
+  }
 
-  if (!user) {
+  const otp = existUser.resetOTP;
+
+  // Step 2: Verify OTP
+  if (existUser.resetOTP !== otp) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Invalid OTP");
+  }
+
+  // Step 3: Check if OTP has expired (5 minutes expiry)
+  const currentTime = new Date().getTime();
+  if (currentTime > existUser.otpExpiry!) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "OTP has expired");
+  }
+
+  // Step 2: Update password
+  // Check if resetPassword is provided
+  if (!resetPassword) {
     throw new ApiError(
       httpStatus.BAD_REQUEST,
-      "User with this email does not exist!"
+      "Password is required for the reset."
     );
   }
 
-  // verify token
-  jwtTokenProvider.verifyJwtToken(token, Config.refresh_key as Secret);
-
-  // hash password
-  const password = await bcrypt.hash(
-    resetPassword,
+  // Hash the new password
+  const hashedPassword = await bcrypt.hash(
+    resetPassword!,
     Number(Config.password_sold_round)
   );
 
-  // update password
-  await UserTable.updateOne({ email }, { password });
+  // Update the user's password
+  await UserTable.updateOne({ email }, { password: hashedPassword });
+
+  // Optionally, clear the OTP after successful reset
+  await UserTable.updateOne(
+    { email },
+    { resetOTP: null, otpExpiry: null, isCheckOTP: null }
+  );
+
+  return { message: "Password reset successfully." };
+};
+
+// resend OTP
+const resendOTPService = async (payload: IForgot) => {
+  const { email } = payload;
+
+  // Find user in the database
+  const existUser = await UserTable.findOne({ email });
+  if (!existUser) {
+    throw new ApiError(httpStatus.NOT_FOUND, "User not found");
+  }
+
+  // Check if OTP is already generated and expired
+  const currentTime = new Date().getTime();
+  if (existUser.resetOTP && currentTime < existUser.otpExpiry!) {
+    return { message: "OTP is still valid. Please check your email." };
+  }
+
+  // Generate a new OTP since either no OTP exists or OTP has expired
+  const otp = generateOTP();
+  const otpExpiry = currentTime + 5 * 60 * 1000; // 5 minutes expiry time
+
+  // Update the user with the new OTP and expiry time
+  await UserTable.updateOne(
+    { email },
+    {
+      resetOTP: otp,
+      otpExpiry: otpExpiry,
+    }
+  );
+
+  const mailData = {
+    otp,
+    ...existUser.toObject(),
+  };
+
+  // Send OTP email
+  MailSend(mailData);
+
+  return { message: "A new OTP has been sent to your email." };
+};
+
+// Check the OTP
+const CheckOTPService = async (payload: IOTP) => {
+  const { email, otp } = payload;
+
+  // Step 1: Check if user exists
+  const existUser = await UserTable.findOne({ email });
+  if (!existUser) {
+    throw new ApiError(httpStatus.NOT_FOUND, "User not found");
+  }
+
+  // Step 2: Verify OTP
+  if (existUser.resetOTP !== otp) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Invalid OTP");
+  }
+
+  // Step 3: Check if OTP has expired (5 minutes expiry)
+  const currentTime = new Date().getTime();
+  if (currentTime > existUser.otpExpiry!) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "OTP has expired");
+  }
+
+  existUser.resetOTP = otp;
+  // console.log(existUser.isCheckOTP);
+  return { message: "OTP is valid and verified" };
 };
 
 export const authService = {
@@ -206,4 +301,6 @@ export const authService = {
   ChangePasswordService,
   forgotPasswordService,
   resetPasswordService,
+  resendOTPService,
+  CheckOTPService,
 };

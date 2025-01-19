@@ -62,8 +62,25 @@ const UpdateSingleDriverController = CatchAsync(
   }
 );
 
+//delete driver
+const DeleteSingleDriverController = CatchAsync(
+  async (req: Request, res: Response) => {
+    const { id } = req.params;
+
+    const result = await DriverService.DeleteSingleDriverService(id);
+
+    SendResponse<Partial<ITransportVolunteer>>(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Driver deleted success!",
+      data: result,
+    });
+  }
+);
+
 export const DriverController = {
   GetAllDeriverController,
   GetSingleDriverController,
   UpdateSingleDriverController,
+  DeleteSingleDriverController,
 };

@@ -5,5 +5,6 @@ const router = express.Router();
 router.get("/", DriverController.GetAllDeriverController);
 router.get("/:id", DriverController.GetSingleDriverController);
 router.patch("/:id", DriverController.UpdateSingleDriverController);
+router.delete("/:id", DriverController.DeleteSingleDriverController);
 
 export const DriverRoutes = router;

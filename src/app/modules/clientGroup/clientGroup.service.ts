@@ -1,5 +1,5 @@
 import httpStatus from "http-status";
-import { SortOrder } from "mongoose";
+import mongoose, { SortOrder } from "mongoose";
 import ApiError from "../../../error/APIsError";
 import { paginationHelper } from "../../../helper/paginationHelper";
 import { IGenResponse } from "../../interfaces/Common";
@@ -83,6 +83,9 @@ const GetSingleClientGroupService = async (
   id: string
 ): Promise<IClientGroup | null> => {
   const result = await ClientGroupTable.findById(id).populate("clients");
+  if (!result) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Group does not exist!");
+  }
   return result;
 };
 
@@ -106,9 +109,33 @@ const UpdateClientGroupService = async (
   return result;
 };
 
+// delete client group service
+const DeleteClientGroupService = async (
+  id: string
+): Promise<Partial<IClientGroup | null>> => {
+  // Check if the meetingId is a valid MongoDB ObjectId
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Invalid meeting ID");
+  }
+
+  const isExist = await ClientGroupTable.findById(id).populate("clients");
+
+  if (!isExist) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Group does not exist!");
+  }
+
+  const result = await ClientGroupTable.findByIdAndDelete(id, {
+    new: true,
+    runValidators: true,
+  }).populate("clients");
+
+  return result;
+};
+
 export const ClientGroupService = {
   CreateClientGroupService,
   GetAllClientGroupService,
   UpdateClientGroupService,
   GetSingleClientGroupService,
+  DeleteClientGroupService,
 };

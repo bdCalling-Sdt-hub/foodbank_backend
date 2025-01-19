@@ -4,10 +4,12 @@ import ApiError from "../../../error/APIsError";
 import { paginationHelper } from "../../../helper/paginationHelper";
 import { IGenResponse } from "../../interfaces/Common";
 import { IPaginationOptions } from "../../interfaces/interfaces";
+import { ClientGroupTable } from "../clientGroup/clientGroup.model";
 import { KeyOfFilterForClientSearchTerm } from "../clients/clients.constant";
 import { IClientFilterKey } from "../clients/clients.interface";
 import { ITransportVolunteer } from "../TransportVolunteer/TransportVolunteer.interface";
 import { TransportVolunteerTable } from "../TransportVolunteer/TransportVolunteer.model";
+import { VolunteerGroupT } from "../volunteerGroup/volunteerGroup.model";
 
 const GetAllDriverService = async (
   filters: IClientFilterKey,
@@ -52,6 +54,7 @@ const GetAllDriverService = async (
   const whereConditions = andConditions.length ? { $and: andConditions } : {};
   const result = await TransportVolunteerTable.find(whereConditions)
     .populate("meetings")
+    // .populate("volunteers")
     .sort(sortConditions)
     .limit(limit)
     .skip(skip);
@@ -75,7 +78,9 @@ const GetAllDriverService = async (
 const GetSingleDriverService = async (
   id: string
 ): Promise<Partial<ITransportVolunteer>> => {
-  const driver = await TransportVolunteerTable.findById(id);
+  const driver = await TransportVolunteerTable.findById(id).populate(
+    "meetings"
+  );
 
   if (!driver) {
     throw new ApiError(httpStatus.NOT_FOUND, "Client does not exists!");
@@ -104,8 +109,43 @@ const UpdateSingleDriverService = async (
   return update;
 };
 
+// delete single drive
+const DeleteSingleDriverService = async (
+  id: string
+): Promise<Partial<ITransportVolunteer | null>> => {
+  const driver = await TransportVolunteerTable.findById(id);
+
+  if (!driver) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Driver does not exists!");
+  }
+
+  const isIncludeClientGroup = await ClientGroupTable.findOne({
+    clients: { _id: id },
+  });
+  const isIncludeVolunteerGroup = await VolunteerGroupT.findOne({
+    volunteers: { _id: id },
+  });
+
+  // console.log({ isIncludeClientGroup, isIncludeVolunteerGroup });
+
+  if (isIncludeClientGroup || isIncludeVolunteerGroup) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      "The volunteer already attended the meeting."
+    );
+  }
+
+  const update = await TransportVolunteerTable.findByIdAndDelete(id, {
+    new: true,
+    runValidators: true,
+  });
+
+  return update;
+};
+
 export const DriverService = {
   GetAllDriverService,
   GetSingleDriverService,
   UpdateSingleDriverService,
+  DeleteSingleDriverService,
 };

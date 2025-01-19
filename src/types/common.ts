@@ -15,6 +15,12 @@ export type IForgot = {
 };
 
 export type IResetPassword = {
+  email?: string;
+  resetPassword?: string;
+  otp?: string;
+};
+
+export type IOTP = {
   email: string;
-  resetPassword: string;
+  otp: string;
 };

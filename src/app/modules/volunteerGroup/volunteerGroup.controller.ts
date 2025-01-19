@@ -86,9 +86,26 @@ const GetSingleVolunteerGroupController = CatchAsync(
   }
 );
 
+// Delete volunteer group
+const DeleteVolunteerGroupController = CatchAsync(
+  async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const result =
+      await VolunteerGroupService.DeleteSingleVolunteerGroupService(id);
+
+    SendResponse<IVolunteerGroup>(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Deleted volunteer group!",
+      data: result,
+    });
+  }
+);
+
 export const VolunteerGroupController = {
   CreateVolunteerGroupController,
   GetAllVolunteerGroupController,
   UpdateVolunteerGroupController,
   GetSingleVolunteerGroupController,
+  DeleteVolunteerGroupController,
 };

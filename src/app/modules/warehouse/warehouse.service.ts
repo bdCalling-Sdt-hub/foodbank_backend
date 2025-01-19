@@ -5,8 +5,10 @@ import { paginationHelper } from "../../../helper/paginationHelper";
 import { IPaginationOptions } from "../../interfaces/interfaces";
 import { ITransportVolunteer } from "../TransportVolunteer/TransportVolunteer.interface";
 import { TransportVolunteerTable } from "../TransportVolunteer/TransportVolunteer.model";
+import { ClientGroupTable } from "../clientGroup/clientGroup.model";
 import { KeyOfFilterForClientSearchTerm } from "../clients/clients.constant";
 import { IClientFilterKey } from "../clients/clients.interface";
+import { VolunteerGroupT } from "../volunteerGroup/volunteerGroup.model";
 
 const GetAllWarehouseService = async (
   filters: IClientFilterKey,
@@ -104,9 +106,43 @@ const UpdateSingleWarehouseService = async (
 
   return update;
 };
+// delete single drive
+const DeleteSingleWarehouseService = async (
+  id: string
+): Promise<Partial<ITransportVolunteer | null>> => {
+  const warehouse = await TransportVolunteerTable.findById(id);
+
+  if (!warehouse) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Warehouse does not exists!");
+  }
+
+  const isIncludeClientGroup = await ClientGroupTable.findOne({
+    clients: { _id: id },
+  });
+  const isIncludeVolunteerGroup = await VolunteerGroupT.findOne({
+    volunteers: { _id: id },
+  });
+
+  // console.log({ isIncludeClientGroup, isIncludeVolunteerGroup });
+
+  if (isIncludeClientGroup || isIncludeVolunteerGroup) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      "The volunteer already attended the meeting."
+    );
+  }
+
+  const update = await TransportVolunteerTable.findByIdAndDelete(id, {
+    new: true,
+    runValidators: true,
+  });
+
+  return update;
+};
 
 export const WarehouseService = {
   GetAllWarehouseService,
   GetSingleWarehouseService,
   UpdateSingleWarehouseService,
+  DeleteSingleWarehouseService,
 };

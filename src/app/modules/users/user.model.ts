@@ -33,7 +33,7 @@ const userSchema = new Schema<IUser, UserModel>(
       type: String,
       required: true,
       trim: true,
-      select: false,
+      // select: false,
     },
 
     profilePicture: {
@@ -48,6 +48,15 @@ const userSchema = new Schema<IUser, UserModel>(
     },
     status: {
       type: Boolean,
+    },
+    resetOTP: {
+      type: String,
+    },
+    otpExpiry: {
+      type: Number,
+    },
+    isCheckOTP: {
+      type: String,
     },
   },
   {
@@ -67,7 +76,7 @@ userSchema.methods.isEmailExist = async function (
     // { id: 1, password: 1, role: 1 }
   );
 
-  console.log(user);
+  // console.log(user);
 
   return user;
 };
@@ -79,7 +88,7 @@ userSchema.methods.isPasswordMatch = async function (
 ): Promise<boolean> {
   console.log(currentPassword, savePassword);
   const user = await bcrypt.compare(currentPassword, savePassword);
-  console.log(user);
+  // console.log(user);
   return user;
 };
 

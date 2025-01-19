@@ -9,5 +9,6 @@ router.post(
 router.get("/", VolunteerGroupController.GetAllVolunteerGroupController);
 router.get("/:id", VolunteerGroupController.GetSingleVolunteerGroupController);
 router.patch("/:id", VolunteerGroupController.UpdateVolunteerGroupController);
+router.delete("/:id", VolunteerGroupController.DeleteVolunteerGroupController);
 
 export const VolunteerGroupRoutes = router;

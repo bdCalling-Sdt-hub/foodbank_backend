@@ -34,7 +34,7 @@ const loginUser = CatchAsync(async (req: Request, res: Response) => {
 // refresh token
 const refreshToken = CatchAsync(async (req: Request, res: Response) => {
   const { refreshToken } = req.cookies;
-  console.log(refreshToken);
+  // console.log(refreshToken);
 
   const result = await authService.refreshTokenService(refreshToken);
 
@@ -86,15 +86,44 @@ const forgotPassword = CatchAsync(async (req: Request, res: Response) => {
 // reset password
 const resetPassword = CatchAsync(async (req: Request, res: Response) => {
   const payload = req.body;
-  const token = req.headers.authorization;
 
   // @ts-ignore
-  const result = await authService.resetPasswordService(payload, token);
+  const result = await authService.resetPasswordService(payload);
 
   SendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
     message: "Password updated!",
+    data: result,
+  });
+});
+
+// Resend OTP
+const resendOTPController = CatchAsync(async (req: Request, res: Response) => {
+  const payload = req.body;
+
+  // @ts-ignore
+  const result = await authService.resendOTPService(payload);
+
+  SendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: null,
+    data: result,
+  });
+});
+
+// Check OTP
+const checkOTPController = CatchAsync(async (req: Request, res: Response) => {
+  const payload = req.body;
+
+  // @ts-ignore
+  const result = await authService.CheckOTPService(payload);
+
+  SendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: null,
     data: result,
   });
 });
@@ -105,4 +134,6 @@ export const loginController = {
   changePassword,
   forgotPassword,
   resetPassword,
+  resendOTPController,
+  checkOTPController,
 };

@@ -1,5 +1,5 @@
 import httpStatus from "http-status";
-import { SortOrder } from "mongoose";
+import mongoose, { SortOrder } from "mongoose";
 import ApiError from "../../../error/APIsError";
 import { paginationHelper } from "../../../helper/paginationHelper";
 import { IGenResponse } from "../../interfaces/Common";
@@ -18,7 +18,7 @@ const CreateVolunteerGroupService = async (
     { $push: { volunteers: result._id } }
   );
 
-  console.log(data);
+  // console.log(result);
 
   return result;
 };
@@ -77,11 +77,12 @@ const GetAllVolunteerGroupService = async (
   };
 };
 
+// update
 const UpdateVolunteerGroupService = async (
   id: string,
   payload: Partial<IVolunteerGroup>
 ): Promise<IVolunteerGroup | null> => {
-  const isExist = await VolunteerGroupT.findById(id);
+  const isExist = await VolunteerGroupT.findById(id).populate("volunteers");
   if (!isExist) {
     throw new ApiError(httpStatus.NOT_FOUND, "Group does not exists!");
   }
@@ -90,7 +91,7 @@ const UpdateVolunteerGroupService = async (
     id,
     { $set: payload },
     { new: true, runValidators: true }
-  );
+  ).populate("volunteers");
   return result;
 };
 
@@ -105,9 +106,32 @@ const GetSingleVolunteerGroupService = async (
   return isExist;
 };
 
+const DeleteSingleVolunteerGroupService = async (
+  id: string
+): Promise<IVolunteerGroup | null> => {
+  // Check if the group id is a valid MongoDB ObjectId
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Invalid group ID");
+  }
+
+  const isExist = await VolunteerGroupT.findById(id).populate("volunteers");
+
+  if (!isExist) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Group does not exist!");
+  }
+
+  const result = await VolunteerGroupT.findByIdAndDelete(id, {
+    new: true,
+    runValidators: true,
+  }).populate("volunteers");
+
+  return result;
+};
+
 export const VolunteerGroupService = {
   CreateVolunteerGroupService,
   GetAllVolunteerGroupService,
   UpdateVolunteerGroupService,
   GetSingleVolunteerGroupService,
+  DeleteSingleVolunteerGroupService,
 };

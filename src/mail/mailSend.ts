@@ -1,13 +1,14 @@
 import nodemailer from "nodemailer";
-import { IUser } from "../app/modules/users/user.interface";
 import Config from "../config/Config";
 import { MailBody } from "./mailBody";
 
-const subject: string = "Reset Your Password";
+const subject: string = "Reset Your OTP";
 
-export const MailSend = async (payload: IUser, link: string) => {
+export const MailSend = async (payload: any) => {
   const user = payload.email;
-  console.log("email from mail send file", link);
+  // console.log("email from mail send file", link);
+  // console.log(payload);
+  // console.log(payload.email);
 
   const transporter = nodemailer.createTransport({
     host: "smtp.gmail.com",
@@ -24,7 +25,7 @@ export const MailSend = async (payload: IUser, link: string) => {
     from: Config.email,
     to: user,
     subject: subject,
-    text: "Dear user",
-    html: MailBody(payload, link),
+    // text: `Your OTP for password reset is: ${payload?.otp}`,
+    html: MailBody(payload),
   });
 };
