@@ -1,15 +1,34 @@
 import express from "express";
+import { ENUM_USER_ROLE } from "../../../enum/role";
+import { AuthProvider } from "../../middleware/auth";
 import { ClientController } from "./clientGroup.controller";
 
 const router = express.Router();
 
 router.post(
   "/create-client-group",
+  AuthProvider.Auth(ENUM_USER_ROLE.SUPER_ADMIN, ENUM_USER_ROLE.ADMIN),
   ClientController.CreateClientGroupController
 );
-router.get("/", ClientController.GetAllClientGroupController);
-router.patch("/:id", ClientController.UpdateClientGroupController);
-router.get("/:id", ClientController.GetSingleClientGroupController);
-router.delete("/:id", ClientController.DeleteSingleClientGroupController);
+router.get(
+  "/",
+  AuthProvider.Auth(ENUM_USER_ROLE.SUPER_ADMIN, ENUM_USER_ROLE.ADMIN),
+  ClientController.GetAllClientGroupController
+);
+router.patch(
+  "/:id",
+  AuthProvider.Auth(ENUM_USER_ROLE.SUPER_ADMIN, ENUM_USER_ROLE.ADMIN),
+  ClientController.UpdateClientGroupController
+);
+router.get(
+  "/:id",
+  AuthProvider.Auth(ENUM_USER_ROLE.SUPER_ADMIN, ENUM_USER_ROLE.ADMIN),
+  ClientController.GetSingleClientGroupController
+);
+router.delete(
+  "/:id",
+  AuthProvider.Auth(ENUM_USER_ROLE.SUPER_ADMIN, ENUM_USER_ROLE.ADMIN),
+  ClientController.DeleteSingleClientGroupController
+);
 
 export const ClientGroupRoutes = router;

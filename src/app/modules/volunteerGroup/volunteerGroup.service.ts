@@ -7,6 +7,7 @@ import { IPaginationOptions } from "../../interfaces/interfaces";
 import { IVolunteerFilters, IVolunteerGroup } from "./volunteerGroup.interface";
 import { VolunteerGroupT } from "./volunteerGroup.model";
 
+// Create/add a volunteer group
 const CreateVolunteerGroupService = async (
   payload: IVolunteerGroup
 ): Promise<IVolunteerGroup | null> => {
@@ -23,6 +24,7 @@ const CreateVolunteerGroupService = async (
   return result;
 };
 
+// Get all volunteer group
 const GetAllVolunteerGroupService = async (
   filters: IVolunteerFilters,
   paginationOptions: IPaginationOptions
@@ -95,6 +97,7 @@ const UpdateVolunteerGroupService = async (
   return result;
 };
 
+// Get single volunteer group
 const GetSingleVolunteerGroupService = async (
   id: string
 ): Promise<IVolunteerGroup | null> => {
@@ -106,6 +109,7 @@ const GetSingleVolunteerGroupService = async (
   return isExist;
 };
 
+// Delete volunteer group
 const DeleteSingleVolunteerGroupService = async (
   id: string
 ): Promise<IVolunteerGroup | null> => {
