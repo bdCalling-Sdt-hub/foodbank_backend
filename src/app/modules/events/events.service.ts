@@ -8,6 +8,8 @@ import { TransportVolunteerTable } from "../TransportVolunteer/TransportVoluntee
 import Events from "./events.model";
 
 const createEvent = async (payload: IEvents): Promise<IEvents | null> => {
+  console.log("console from service page", payload);
+
   try {
     const result = await Events.create(payload);
     return result;
@@ -19,8 +21,11 @@ const createEvent = async (payload: IEvents): Promise<IEvents | null> => {
 
 const getEvent = async (req: Request) => {
   const { eventId } = req.params;
+  console.log(eventId);
+
   try {
     const getEvent = await Events.findById(eventId);
+    console.log(getEvent);
     if (!getEvent) {
       throw new ApiError(httpStatus.NOT_FOUND, "Event not found");
     }

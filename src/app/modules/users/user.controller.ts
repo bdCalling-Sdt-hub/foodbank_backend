@@ -10,8 +10,8 @@ import { UserService } from "./user.service";
 
 // create a new user
 const CreateUserController = CatchAsync(async (req: Request, res: Response) => {
-  const payload = req.body;
-  const result = await UserService.CreateUserService(payload);
+  // const payload = req.body;
+  const result = await UserService.CreateUserService(req);
 
   SendResponse<IUser | null>(res, {
     statusCode: httpStatus.OK,
@@ -58,10 +58,16 @@ const GetSingleUserController = CatchAsync(
 );
 
 // update single user
-const UpdateUserController = CatchAsync(async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const payload = req.body;
+const UpdateUserController = async (
+  id: string,
+  payload: IUser,
+  res: Response
+) => {
+  // const { id } = req.params;
+  // const payload = req.body;
   const result = await UserService.UpdateUserService(id, payload);
+
+  console.log(payload);
 
   SendResponse<Partial<IUser> | null>(res, {
     statusCode: httpStatus.OK,
@@ -69,7 +75,7 @@ const UpdateUserController = CatchAsync(async (req: Request, res: Response) => {
     message: "User updated success!",
     data: result,
   });
-});
+};
 
 // update single user
 const DeleteUserController = CatchAsync(async (req: Request, res: Response) => {

@@ -15,6 +15,11 @@ router.get(
   AuthProvider.Auth(ENUM_USER_ROLE.SUPER_ADMIN, ENUM_USER_ROLE.ADMIN),
   TransportVolunteerController.GetAllTransportVolunteerController
 );
+router.get(
+  "/driver-warehouse",
+  AuthProvider.Auth(ENUM_USER_ROLE.SUPER_ADMIN, ENUM_USER_ROLE.ADMIN),
+  TransportVolunteerController.GetAllDriverWarehouseTransportVolunteerController
+);
 
 router.get(
   "/:id",
@@ -26,6 +31,11 @@ router.patch(
   "/:id",
   AuthProvider.Auth(ENUM_USER_ROLE.SUPER_ADMIN, ENUM_USER_ROLE.ADMIN),
   TransportVolunteerController.UpdateSingleTransportVolunteerController
+);
+router.delete(
+  "/:id",
+  AuthProvider.Auth(ENUM_USER_ROLE.SUPER_ADMIN, ENUM_USER_ROLE.ADMIN),
+  TransportVolunteerController.DeleteSingleTransportVolunteerController
 );
 
 export const TransportVolunteerRoutes = router;

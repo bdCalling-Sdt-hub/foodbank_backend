@@ -4,7 +4,6 @@ import CatchAsync from "../../../shared/CatchAsync";
 import SendResponse from "../../../shared/SendResponse";
 import { EventService } from "./events.service";
 
-
 const createEventsDb = CatchAsync(async (req: Request, res: Response) => {
   const payload = req.body;
   const result = await EventService.createEvent(payload);
@@ -86,27 +85,27 @@ const addGroupUpdate = CatchAsync(async (req: Request, res: Response) => {
     message: "Added successfully!",
     data: result,
   });
-
-})
+});
 
 const removeGroupUpdate = CatchAsync(async (req: Request, res: Response) => {
-  const result = await EventService.removeGroupUpdate(req.body as IGroupRequest);
+  const result = await EventService.removeGroupUpdate(
+    req.body as IGroupRequest
+  );
   return SendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
     message: "Removed successfully!",
     data: result,
   });
-})
+});
 
 const getEventsGroups = CatchAsync(async (req: Request, res: Response) => {
-
   const query: IGetGroups = {
     eventId: req.query.eventId as string,
     page: parseInt(req.query.page as string, 10) || 1,
     limit: parseInt(req.query.limit as string, 10) || 10,
-    searchQuery: req.query.searchQuery as string || "",
-    type: req.query.type as string
+    searchQuery: (req.query.searchQuery as string) || "",
+    type: req.query.type as string,
   };
 
   const result = await EventService.getEventsGroups(query);
@@ -116,10 +115,7 @@ const getEventsGroups = CatchAsync(async (req: Request, res: Response) => {
     message: "Removed successfully!",
     data: result,
   });
-})
-
-
-
+});
 
 export const EventController = {
   createEventsDb,
@@ -131,5 +127,5 @@ export const EventController = {
   removeClientByEmail,
   addGroupUpdate,
   removeGroupUpdate,
-  getEventsGroups
+  getEventsGroups,
 };

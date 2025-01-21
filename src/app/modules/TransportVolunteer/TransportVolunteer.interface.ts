@@ -8,8 +8,8 @@ export type ITransportVolunteer = {
   lastName: string;
   holocaustSurvivor?: string;
   dateOfBirth?: string;
-  phoneNo: number;
-  alternativePhoneNo?: number;
+  phoneNo: string;
+  alternativePhoneNo?: string;
   address: string;
   apartment?: string;
   city?: string;
@@ -42,8 +42,8 @@ export type ITransportVolunteerFilters = {
   lastName: string;
   holocaustSurvivor?: string;
   dateOfBirth?: string;
-  phoneNo: number;
-  alternativePhoneNo?: number;
+  phoneNo: string;
+  alternativePhoneNo?: string;
   address: string;
   apartment?: string;
   city?: string;

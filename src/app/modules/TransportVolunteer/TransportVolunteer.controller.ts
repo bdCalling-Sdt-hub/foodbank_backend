@@ -87,9 +87,50 @@ const UpdateSingleTransportVolunteerController = CatchAsync(
   }
 );
 
+// Update single transport volunteer
+const DeleteSingleTransportVolunteerController = CatchAsync(
+  async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const payload = req.body;
+
+    const result =
+      await TransportVolunteerService.DeleteSingleTransportVolunteerService(id);
+
+    SendResponse<Partial<ITransportVolunteer> | null>(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Deleted single volunteer!",
+      data: result,
+    });
+  }
+);
+//Get all driver and warehouse
+const GetAllDriverWarehouseTransportVolunteerController = CatchAsync(
+  async (req: Request, res: Response) => {
+    const filters = pick(req.query, paginationFilterableKey);
+
+    const paginationOptions = pick(req.query, paginationFields);
+
+    const result =
+      await TransportVolunteerService.GetAllDriverWarehouseTransportVolunteerService(
+        filters,
+        paginationOptions
+      );
+
+    SendResponse<ITransportVolunteer[] | null>(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Driver & warehouse get success!",
+      data: result,
+    });
+  }
+);
+
 export const TransportVolunteerController = {
   CreateTransportVolunteerController,
   GetAllTransportVolunteerController,
   GetSingleTransportVolunteerController,
   UpdateSingleTransportVolunteerController,
+  DeleteSingleTransportVolunteerController,
+  GetAllDriverWarehouseTransportVolunteerController,
 };

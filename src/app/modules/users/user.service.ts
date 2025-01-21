@@ -1,20 +1,36 @@
+import { Request } from "express";
 import httpStatus from "http-status";
 import { SortOrder } from "mongoose";
+import { ENUM_USER_ROLE } from "../../../enum/role";
 import ApiError from "../../../error/APIsError";
 import { paginationHelper } from "../../../helper/paginationHelper";
 import { IGenResponse } from "../../interfaces/Common";
+import { IUploadFile } from "../../interfaces/File";
 import { IPaginationOptions } from "../../interfaces/interfaces";
 import { KeyOfFilterForSearchTerms } from "./user.constant";
 import { IUser, IUserFilters } from "./user.interface";
 import { UserTable } from "./user.model";
 
 // create user service
-const CreateUserService = async (payload: IUser): Promise<IUser | null> => {
-  // Check if the contact number or email already exists
-  const isCheckNumber = await UserTable.findOne({
-    contactNo: payload.contactNo,
-  });
-  const isCheckEmail = await UserTable.findOne({ email: payload.email });
+const CreateUserService = async (req: Request): Promise<IUser | null> => {
+  const payload: IUser = req.body;
+  console.log(req.body.data);
+
+  // Handle file upload (profile picture)
+  const file = req.file as IUploadFile;
+
+  const fileName = `${file?.destination}${file.filename}`;
+  console.log(fileName);
+
+  if (file) {
+    payload.profilePicture = fileName;
+  }
+
+  // Validate if contact number or email already exists
+  const [isCheckNumber, isCheckEmail] = await Promise.all([
+    UserTable.findOne({ contactNo: payload.contactNo }),
+    UserTable.findOne({ email: payload.email }),
+  ]);
 
   // Throw an error if the contact number already exists
   if (isCheckNumber) {
@@ -26,16 +42,27 @@ const CreateUserService = async (payload: IUser): Promise<IUser | null> => {
     throw new ApiError(httpStatus.FORBIDDEN, "Email already exists!");
   }
 
-  // role set
+  // Set default role if not provided
   if (!payload.role) {
     payload.role = "admin";
   }
 
-  // user status
+  console.log(file);
+
+  // Set user status
   payload.status = true;
 
-  // Create a new user in the database
-  const result = await UserTable.create(payload);
+  // Parse and modify the data object
+  const data = JSON.parse(req.body.data);
+
+  // Add profilePicture and role to the data object
+  data.profilePicture = payload.profilePicture;
+  data.role = payload.role;
+
+  console.log(data);
+
+  // Create the new user in the database
+  const result = await UserTable.create({ ...payload, ...data });
 
   return result;
 };
@@ -128,20 +155,30 @@ const UpdateUserService = async (
   return updatedUser;
 };
 
-// delete user service
 const DeleteUserService = async (
   id: string
 ): Promise<Partial<IUser> | null> => {
+  // Validate if id is provided
   if (!id) {
     throw new ApiError(httpStatus.BAD_REQUEST, "User ID is required!");
   }
 
-  const result = await UserTable.findByIdAndDelete(id);
+  const isSupperAdmin = await UserTable.findById(id);
 
-  if (!result) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "User does not exits!");
+  // If the user doesn't exist
+  if (!isSupperAdmin) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "User does not exist!");
   }
 
+  // Check if the user is a super admin and prevent deletion
+  if (isSupperAdmin.role === ENUM_USER_ROLE.SUPER_ADMIN) {
+    throw new ApiError(httpStatus.FORBIDDEN, "Super admin cannot be deleted!");
+  }
+
+  // Find and delete the user
+  const result = await UserTable.findByIdAndDelete(id);
+
+  // Return the deleted user
   return result;
 };
 

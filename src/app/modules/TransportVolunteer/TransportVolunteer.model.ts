@@ -31,12 +31,12 @@ const TransportVolunteerSchema = new Schema<
     },
 
     phoneNo: {
-      type: Number,
+      type: String,
       trim: true,
       required: true,
     },
     alternativePhoneNo: {
-      type: Number,
+      type: String,
       trim: true,
     },
 

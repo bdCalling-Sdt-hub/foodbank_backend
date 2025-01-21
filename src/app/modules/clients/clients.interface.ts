@@ -5,8 +5,8 @@ export type IClientFilterKey = {
   lastName: string;
   holocaustSurvivor?: string;
   dateOfBirth?: string;
-  phoneNo: number;
-  alternativePhoneNo?: number;
+  phoneNo: string;
+  alternativePhoneNo?: string;
   address: string;
   apartment?: string;
   city?: string;

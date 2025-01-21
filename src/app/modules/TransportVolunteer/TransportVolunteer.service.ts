@@ -153,6 +153,89 @@ const UpdateSingleClientController = async (
   return update;
 };
 
+// Delete volunteer
+const DeleteSingleTransportVolunteerService = async (id: string) => {
+  const filterClient = await TransportVolunteerTable.findById(id);
+
+  if (!filterClient) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Client does not exists!");
+  }
+
+  const update = await TransportVolunteerTable.findByIdAndDelete(id, {
+    new: true,
+    runValidators: true,
+  });
+
+  return update;
+};
+
+// Get driver and warehouse
+const GetAllDriverWarehouseTransportVolunteerService = async (
+  filters: ITransportVolunteerFilters,
+  paginationOptions: IPaginationOptions
+): Promise<IGenResponse<ITransportVolunteer[]>> => {
+  const { searchTerm, ...searchTermData } = filters;
+
+  const andConditions: any[] = [];
+
+  // Add status filter for driver or warehouse
+  andConditions.push({ status: { $in: ["driver", "warehouse"] } });
+
+  // Add searchTerm filter for relevant fields
+  if (searchTerm) {
+    andConditions.push({
+      $or: TransportVolunteerSearchTermsFields.map((field) => ({
+        [field]: {
+          $regex: searchTerm,
+          $options: "i",
+        },
+      })),
+    });
+  }
+
+  // Add other filters based on searchTermData
+  if (Object.keys(searchTermData).length) {
+    andConditions.push({
+      $and: Object.entries(searchTermData).map(([field, value]) => ({
+        [field]: value,
+      })),
+    });
+  }
+
+  // Pagination and sorting
+  const { page, limit, skip, sortBy, sortOrder } =
+    paginationHelper.paginationCalculation(paginationOptions);
+
+  const sortConditions: { [key: string]: SortOrder } = {};
+
+  if (sortBy && sortOrder) {
+    sortConditions[sortBy] = sortOrder;
+  }
+
+  // Where conditions to pass to find method
+  const whereConditions = andConditions.length ? { $and: andConditions } : {};
+
+  // Query the transport volunteer table with conditions, sorting, and pagination
+  const result = await TransportVolunteerTable.find(whereConditions)
+    .populate("meetings")
+    .sort(sortConditions)
+    .limit(limit)
+    .skip(skip);
+
+  // Count the total number of documents matching the conditions
+  const total = await TransportVolunteerTable.countDocuments(whereConditions);
+
+  // Return the paginated response
+  return {
+    meta: {
+      page,
+      limit,
+      total,
+    },
+    data: result,
+  };
+};
+
 export const TransportVolunteerService = {
   CreateTransportVolunteerService,
   GetAllTransportVolunteerService,
@@ -161,4 +244,6 @@ export const TransportVolunteerService = {
   GetAllTransportClientService,
   GetSingleTransportClientService,
   UpdateSingleClientController,
+  DeleteSingleTransportVolunteerService,
+  GetAllDriverWarehouseTransportVolunteerService,
 };
