@@ -4,6 +4,7 @@ import { ClientGroupRoutes } from "../modules/clientGroup/clientGroup.route";
 import { ClientRoutes } from "../modules/clients/clients.route";
 import { DriverRoutes } from "../modules/drivers/drivers.route";
 import { EventRouters } from "../modules/events/events.route";
+import { GroupRoutes } from "../modules/groups/groups.route";
 import { TransportVolunteerRoutes } from "../modules/TransportVolunteer/TransportVolunteer.route";
 import { UserRouters } from "../modules/users/user.route";
 import { VolunteerGroupRoutes } from "../modules/volunteerGroup/volunteerGroup.route";
@@ -52,6 +53,10 @@ const modulesRouters = [
   {
     path: "/volunteer-group",
     route: VolunteerGroupRoutes,
+  },
+  {
+    path: "/groups",
+    route: GroupRoutes,
   },
 ];
 

@@ -30,7 +30,7 @@ const getEvent = async (req: Request) => {
         path: "groups",
         populate: {
           path: "gid",
-          model: "ClientGroups",
+          model: "Groups",
         },
       });
 

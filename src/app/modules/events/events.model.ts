@@ -26,7 +26,7 @@ const UserObjSchema = new Schema<IUserObj>({
 const groupObject = new Schema<IGroup>({
   gid: {
     type: Schema.Types.ObjectId,
-    ref: "ClientGroups",
+    ref: "Groups",
   },
   type: {
     type: String,
