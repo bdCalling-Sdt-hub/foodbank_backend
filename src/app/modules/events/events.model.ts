@@ -1,5 +1,4 @@
 import { model, Schema } from "mongoose";
-const { ObjectId } = Schema.Types;
 
 export type EventType = "wed" | "birthday";
 

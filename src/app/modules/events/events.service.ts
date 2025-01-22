@@ -1,5 +1,6 @@
 import { Request } from "express";
 import httpStatus from "http-status";
+import mongoose from "mongoose";
 import Config from "../../../config/Config";
 import ApiError from "../../../error/APIsError";
 import sendUserRequest from "../../../mail/sendUserRequest";
@@ -302,6 +303,245 @@ const removeClientByEmail = async (req: Request) => {
   };
 };
 
+const addGroupUpdate = async (payload: {
+  groupId: string;
+  eventId: string;
+  types: string;
+}) => {
+  try {
+    const { groupId, eventId, types } = payload;
+
+    if (!groupId || !eventId || !types) {
+      throw new ApiError(
+        httpStatus.BAD_REQUEST,
+        "Missing required parameters."
+      );
+    }
+
+    const eventDb = (await Events.findById(eventId)) as IEvents;
+    if (!eventDb) {
+      throw new ApiError(httpStatus.NOT_FOUND, "Event not found");
+    }
+
+    const existingClient = eventDb.groups.find(
+      (client) => client.gid.toString() === groupId && client.type === types
+    );
+
+    if (existingClient) {
+      throw new ApiError(
+        httpStatus.CONFLICT,
+        `${types} with this groupId already exists.`
+      );
+    }
+
+    const objectIdGroupId = new mongoose.Types.ObjectId(groupId);
+    const result = await Events.findByIdAndUpdate(
+      eventId,
+      { $push: { groups: { gid: objectIdGroupId, type: types } } },
+      { new: true, runValidators: true }
+    );
+
+    return { message: "Group update added successfully", result };
+  } catch (error: any) {
+    console.error("Failed to add group update:", error);
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message);
+  }
+};
+
+const removeGroupUpdate = async (payload: {
+  groupId: string;
+  eventId: string;
+  types: string;
+}) => {
+  try {
+    const { groupId, eventId, types } = payload;
+
+    if (!groupId || !eventId || !types) {
+      throw new ApiError(
+        httpStatus.BAD_REQUEST,
+        "Missing required parameters."
+      );
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(groupId)) {
+      throw new ApiError(httpStatus.BAD_REQUEST, "Invalid groupId.");
+    }
+    const objectIdGroupId = new mongoose.Types.ObjectId(groupId);
+
+    const eventDb = await Events.findById(eventId);
+    if (!eventDb) {
+      throw new ApiError(httpStatus.NOT_FOUND, "Event not found.");
+    }
+
+    const existingGroup = eventDb.groups.find(
+      (group) => group.gid.toString() === groupId && group.type === types
+    );
+
+    if (!existingGroup) {
+      throw new ApiError(httpStatus.NOT_FOUND, "Group not found in event.");
+    }
+
+    const result = await Events.findByIdAndUpdate(
+      eventId,
+      { $pull: { groups: { gid: objectIdGroupId, type: types } } },
+      { new: true, runValidators: true }
+    );
+
+    return { message: "Group removed successfully", result };
+  } catch (error: any) {
+    console.error(
+      `Failed to remove group update for eventId: ${
+        payload.eventId
+      }, payload: ${JSON.stringify(payload)}`,
+      error.message
+    );
+    throw new ApiError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      "Failed to remove group update"
+    );
+  }
+};
+
+const getEventsGroups = async (payload: IGetGroups) => {
+  try {
+    const {
+      type,
+      eventId,
+      page = 1,
+      limit = 10,
+      searchQuery = "",
+    } = payload as IGetGroups;
+
+    const validTypes = ["client", "driver", "warehouse"];
+    if (!validTypes.includes(type)) {
+      throw new ApiError(httpStatus.BAD_REQUEST, "Invalid type parameter.");
+    }
+    if (!mongoose.Types.ObjectId.isValid(eventId)) {
+      throw new ApiError(httpStatus.BAD_REQUEST, "Invalid eventId.");
+    }
+
+    const objectIdEventId = new mongoose.Types.ObjectId(eventId);
+    const skip = (page - 1) * limit;
+
+    const result = await Events.aggregate([
+      {
+        $match: {
+          _id: objectIdEventId,
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          filteredGroups: {
+            $filter: {
+              input: "$groups",
+              as: "group",
+              cond: { $eq: ["$$group.type", type] },
+            },
+          },
+        },
+      },
+      {
+        $unwind: "$filteredGroups",
+      },
+      {
+        $lookup: {
+          from: "clientgroups",
+          localField: "filteredGroups.gid",
+          foreignField: "_id",
+          as: "filteredGroups.gid",
+        },
+      },
+      {
+        $unwind: "$filteredGroups.gid",
+      },
+      ...(searchQuery
+        ? [
+            {
+              $match: {
+                "filteredGroups.gid.clientGroupName": {
+                  $regex: searchQuery,
+                  $options: "i",
+                },
+              },
+            },
+          ]
+        : []),
+      {
+        $project: {
+          "filteredGroups.gid.clients": 0,
+          "filteredGroups.gid.createdAt": 0,
+          "filteredGroups.gid.updatedAt": 0,
+          "filteredGroups.gid.__v": 0,
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          groups: { $push: "$filteredGroups" },
+        },
+      },
+      {
+        $project: {
+          groups: { $slice: ["$groups", skip, limit] },
+        },
+      },
+    ]);
+
+    const totalResult = await Events.aggregate([
+      {
+        $match: {
+          _id: objectIdEventId,
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          totalGroups: {
+            $size: {
+              $filter: {
+                input: "$groups",
+                as: "group",
+                cond: { $eq: ["$$group.type", type] },
+              },
+            },
+          },
+        },
+      },
+      ...(searchQuery
+        ? [
+            {
+              $match: {
+                "filteredGroups.gid.clientGroupName": {
+                  $regex: searchQuery,
+                  $options: "i",
+                },
+              },
+            },
+          ]
+        : []),
+    ]);
+
+    const totalGroups = totalResult.length > 0 ? totalResult[0].totalGroups : 0;
+
+    return {
+      data: result.length > 0 ? result[0].groups : [],
+      meta: {
+        currentPage: page,
+        totalPages: Math.ceil(totalGroups / limit),
+        totalGroups,
+        pageLimit: limit,
+      },
+    };
+  } catch (error) {
+    console.error("Error fetching groups:", error);
+    throw new ApiError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      "Failed to fetch groups."
+    );
+  }
+};
+
 export const EventService = {
   createEvent,
   getEvent,
@@ -310,4 +550,7 @@ export const EventService = {
   deleteEvent,
   addClients,
   removeClientByEmail,
+  addGroupUpdate,
+  removeGroupUpdate,
+  getEventsGroups,
 };
