@@ -21,25 +21,114 @@ const createEvent = async (payload: IEvents): Promise<IEvents | null> => {
 
 const getEvent = async (req: Request) => {
   const { eventId } = req.params;
-  console.log(eventId);
 
   try {
-    const getEvent = await Events.findById(eventId);
-    console.log(getEvent);
-    if (!getEvent) {
+    const event = await Events.findById(eventId)
+      .populate("client.userId")
+      .populate({
+        path: "groups",
+        populate: {
+          path: "gid",
+          model: "ClientGroups",
+        },
+      });
+
+    if (!event) {
       throw new ApiError(httpStatus.NOT_FOUND, "Event not found");
     }
 
-    return getEvent;
+    let holocaustSurvivorsCount = 0;
+    let nonHolocaustSurvivorsCount = 0;
+
+    for (const clientObj of event.client) {
+      const client = await TransportVolunteerTable.findById(clientObj.userId);
+      if (client) {
+        if (client.holocaustSurvivor === "true") {
+          holocaustSurvivorsCount++;
+        } else {
+          nonHolocaustSurvivorsCount++;
+        }
+      }
+    }
+
+    const totalClients = holocaustSurvivorsCount + nonHolocaustSurvivorsCount;
+
+    return {
+      event,
+      holocaustSurvivors: holocaustSurvivorsCount,
+      nonHolocaustSurvivors: nonHolocaustSurvivorsCount,
+      total: totalClients,
+    };
   } catch (error) {
-    console.error("Failed to delete event:", error);
+    console.error("Failed to fetch event client data:", error);
+    throw new ApiError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      "Failed to fetch event client data"
+    );
   }
 };
 
-const getEvents = async () => {
+const getEvents = async (req: Request) => {
   try {
-    const result = await Events.find({});
-    return result;
+    const {
+      eventType,
+      filterType,
+      searchQuery,
+      sortField = "dayOfEvent",
+      sortOrder = "asc",
+      page = 1,
+      limit = 10,
+    } = req.query;
+
+    // console.log("all events", eventType, filterType, searchQuery, sortField);
+
+    const query: any = {};
+    if (eventType) {
+      query.eventType = eventType;
+    }
+
+    if (filterType) {
+      const currentDate = new Date();
+      console.log("date", currentDate);
+      if (filterType === "upcoming") {
+        query.dayOfEvent = { $gt: currentDate };
+      } else if (filterType === "today") {
+        const startOfDay = new Date(currentDate.setHours(0, 0, 0, 0));
+        const endOfDay = new Date(currentDate.setHours(23, 59, 59, 999));
+        query.dayOfEvent = { $gte: startOfDay, $lte: endOfDay };
+      } else if (filterType === "previous") {
+        query.dayOfEvent = { $lt: currentDate };
+      }
+    }
+
+    if (searchQuery) {
+      query.eventName = { $regex: searchQuery, $options: "i" };
+    }
+
+    const sort: any = {};
+    //@ts-ignore
+    sort[sortField] = sortOrder === "desc" ? -1 : 1;
+
+    const pageNumber = Math.max(1, parseInt(page as string, 10));
+    const pageLimit = Math.max(1, parseInt(limit as string, 10));
+    const skip = (pageNumber - 1) * pageLimit;
+
+    const result = await Events.find(query)
+      .sort(sort)
+      .skip(skip)
+      .limit(pageLimit);
+
+    const totalCount = await Events.countDocuments(query);
+
+    return {
+      data: result,
+      meta: {
+        totalCount,
+        currentPage: pageNumber,
+        totalPages: Math.ceil(totalCount / pageLimit),
+        pageLimit,
+      },
+    };
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
     throw new ApiError(httpStatus.BAD_REQUEST, message);
