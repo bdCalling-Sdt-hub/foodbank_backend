@@ -8,6 +8,7 @@ import sendUserRequest from "../../../mail/sendUserRequest";
 import { sendUserRequestBody } from "../../../mail/sendUserRequestBody";
 import Config from "../../../config/Config";
 import mongoose from "mongoose";
+import { ClientTable } from "../clients/clients.model";
 
 const createEvent = async (payload: IEvents): Promise<IEvents | null> => {
     try {
@@ -21,17 +22,51 @@ const createEvent = async (payload: IEvents): Promise<IEvents | null> => {
 
 const getEvent = async (req: Request) => {
     const { eventId } = req.params;
+
     try {
-        const getEvent = await Events.findById(eventId);
-        if (!getEvent) {
+        const event = await Events.findById(eventId)
+            .populate('client.userId')
+            .populate({
+                path: 'groups',
+                populate: {
+                    path: 'gid',
+                    model: 'ClientGroups',
+                },
+            });
+
+        if (!event) {
             throw new ApiError(httpStatus.NOT_FOUND, "Event not found");
         }
 
-        return getEvent;
+        let holocaustSurvivorsCount = 0;
+        let nonHolocaustSurvivorsCount = 0;
+
+        for (const clientObj of event.client) {
+            const client = await ClientTable.findById(clientObj.userId);
+            if (client) {
+                if (client.holocaustSurvivor === "true") {
+                    holocaustSurvivorsCount++;
+                } else {
+                    nonHolocaustSurvivorsCount++;
+                }
+            }
+        }
+
+        const totalClients = holocaustSurvivorsCount + nonHolocaustSurvivorsCount;
+
+        return {
+            event,
+            holocaustSurvivors: holocaustSurvivorsCount,
+            nonHolocaustSurvivors: nonHolocaustSurvivorsCount,
+            total: totalClients,
+        };
     } catch (error) {
-        console.error("Failed to delete event:", error);
+        console.error("Failed to fetch event client data:", error);
+        throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, "Failed to fetch event client data");
     }
 };
+
+
 
 const getEvents = async (req: Request) => {
     try {
