@@ -91,10 +91,25 @@ const DeleteUserController = CatchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// get single user
+const SuperAdminUserController = CatchAsync(
+  async (req: Request, res: Response) => {
+    const result = await UserService.SuperAdminUserService();
+
+    SendResponse<IUser | null>(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Super admin get success!",
+      data: result,
+    });
+  }
+);
+
 export const UserController = {
   CreateUserController,
   GetAllUserController,
   GetSingleUserController,
   UpdateUserController,
   DeleteUserController,
+  SuperAdminUserController,
 };

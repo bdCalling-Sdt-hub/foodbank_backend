@@ -23,6 +23,12 @@ router.get(
 );
 
 router.get(
+  "/super-admin",
+  AuthProvider.Auth(ENUM_USER_ROLE.SUPER_ADMIN),
+  UserController.SuperAdminUserController
+);
+
+router.get(
   "/:id",
   AuthProvider.Auth(ENUM_USER_ROLE.SUPER_ADMIN, ENUM_USER_ROLE.ADMIN),
   UserController.GetSingleUserController

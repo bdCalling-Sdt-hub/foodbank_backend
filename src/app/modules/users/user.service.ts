@@ -182,10 +182,21 @@ const DeleteUserService = async (
   return result;
 };
 
+// get single user service
+const SuperAdminUserService = async (): Promise<IUser | null> => {
+  const user = await UserTable.findOne({ role: "super_admin" });
+
+  if (!user) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Super admin does not exist!");
+  }
+  return user;
+};
+
 export const UserService = {
   CreateUserService,
   GetAllUserService,
   GetSingleUserService,
   UpdateUserService,
   DeleteUserService,
+  SuperAdminUserService,
 };
