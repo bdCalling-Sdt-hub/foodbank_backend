@@ -1,6 +1,6 @@
 
 import mongoose, { Schema, Document, model } from "mongoose";
-const { ObjectId } = Schema.Types;
+
 
 export type EventType = "wed" | "birthday";
 
