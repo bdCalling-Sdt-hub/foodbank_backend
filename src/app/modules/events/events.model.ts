@@ -26,6 +26,8 @@ const UserObjSchema = new Schema<IUserObj>({
 });
 
 
+
+
 const groupObject = new Schema<IGroup>({
   gid: {
     type: Schema.Types.ObjectId,
@@ -36,7 +38,6 @@ const groupObject = new Schema<IGroup>({
     enum: ["client", "warehouse", "driver"],
     required: true
   }
-
 });
 
 const EventSchema = new Schema<IEvents>({
