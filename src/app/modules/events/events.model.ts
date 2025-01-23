@@ -16,7 +16,7 @@ interface IGroup {
 const UserObjSchema = new Schema<IUserObj>({
   userId: {
     type: Schema.Types.ObjectId,
-    ref: "UserModel",
+    ref: "TransportVolunteers",
     required: true,
   },
   email: { type: String, required: true },
