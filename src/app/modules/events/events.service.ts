@@ -240,7 +240,7 @@ const addClients = async (req: Request) => {
     { $push: { [updateField]: { userId, email } } },
     { new: true, runValidators: true }
   );
-  if (type !== 'client') {
+  if (type !== "client") {
     // Send email request
     await sendUserRequest({
       email,
