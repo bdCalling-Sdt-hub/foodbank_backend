@@ -240,26 +240,26 @@ const addClients = async (req: Request) => {
     { $push: { [updateField]: { userId, email } } },
     { new: true, runValidators: true }
   );
-
-  // Send email request
-  await sendUserRequest({
-    email,
-    subject: "Events Request",
-    html: sendUserRequestBody({
+  if (type !== 'client') {
+    // Send email request
+    await sendUserRequest({
       email,
-      name: `${userDb.firstName} ${userDb.lastName}`,
-      url: `http://${Config.base_url}:${Config.port}/api/v1/events/accept-request/${eventId}/${userId}`,
-      frontend_url: "http://10.0.60.118:7000/accept-request",
-      type: typeOfUser,
-      event_name: eventDb.eventName,
-      event_type: eventDb.eventType,
-      event_location: eventDb.location,
-      event_day_of_event: eventDb.dayOfEvent,
-      event_start_of_event: eventDb.startOfEvent,
-      event_end_of_event: eventDb.endOfEvent,
-    }),
-  });
-
+      subject: "Events Request",
+      html: sendUserRequestBody({
+        email,
+        name: `${userDb.firstName} ${userDb.lastName}`,
+        url: `http://${Config.base_url}:${Config.port}/api/v1/events/accept-request/${eventId}/${userId}`,
+        frontend_url: "http://10.0.60.118:7000/accept-request",
+        type: typeOfUser,
+        event_name: eventDb.eventName,
+        event_type: eventDb.eventType,
+        event_location: eventDb.location,
+        event_day_of_event: eventDb.dayOfEvent,
+        event_start_of_event: eventDb.startOfEvent,
+        event_end_of_event: eventDb.endOfEvent,
+      }),
+    });
+  }
   return { message: "Client added successfully", result };
 };
 
