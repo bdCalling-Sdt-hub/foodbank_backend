@@ -5,9 +5,9 @@ import Config from "../../../config/Config";
 import ApiError from "../../../error/APIsError";
 import sendUserRequest from "../../../mail/sendUserRequest";
 import { sendUserRequestBody } from "../../../mail/sendUserRequestBody";
+import { Groups } from "../groups/groups.model";
 import { TransportVolunteerTable } from "../TransportVolunteer/TransportVolunteer.model";
 import Events from "./events.model";
-import { Groups } from "../groups/groups.model";
 
 const createEvent = async (payload: IEvents): Promise<IEvents | null> => {
   console.log("console from service page", payload);
@@ -31,14 +31,14 @@ const getEvent = async (req: Request) => {
         path: "groups",
         populate: {
           path: "gid",
-          select: "groupName volunteerType id"
+          select: "groupName volunteerType id",
         },
       })
       .populate({
         path: "client",
         populate: {
           path: "userId",
-          select: "firstName lastName holocaustSurvivor phoneNo"
+          select: "firstName lastName holocaustSurvivor phoneNo",
         },
       });
 
@@ -197,8 +197,8 @@ const addClients = async (req: Request) => {
     type === "client"
       ? "Client"
       : type === "warehouse"
-        ? "Warehouse Volunteers"
-        : "Driver Volunteers";
+      ? "Warehouse Volunteers"
+      : "Driver Volunteers";
   let existingClient;
   if (type === "client") {
     existingClient = eventDb.client.find((client) => client.email === email);
@@ -233,8 +233,8 @@ const addClients = async (req: Request) => {
     type === "client"
       ? "client"
       : type === "warehouse"
-        ? "warehouse"
-        : "driver";
+      ? "warehouse"
+      : "driver";
   const result = await Events.findByIdAndUpdate(
     eventId,
     { $push: { [updateField]: { userId, email } } },
@@ -276,10 +276,10 @@ const removeClientByEmail = async (req: Request) => {
     type === "client"
       ? "client"
       : type === "warehouse"
-        ? "warehouse"
-        : type === "driver"
-          ? "driver"
-          : null;
+      ? "warehouse"
+      : type === "driver"
+      ? "driver"
+      : null;
 
   if (!updateField) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Invalid type provided.");
@@ -291,7 +291,8 @@ const removeClientByEmail = async (req: Request) => {
   if (!existingClient) {
     throw new ApiError(
       httpStatus.NOT_FOUND,
-      `${type.charAt(0).toUpperCase() + type.slice(1)
+      `${
+        type.charAt(0).toUpperCase() + type.slice(1)
       } with this email not found in the event.`
     );
   }
@@ -303,8 +304,9 @@ const removeClientByEmail = async (req: Request) => {
   );
 
   return {
-    message: `${type.charAt(0).toUpperCase() + type.slice(1)
-      } removed successfully`,
+    message: `${
+      type.charAt(0).toUpperCase() + type.slice(1)
+    } removed successfully`,
     result,
   };
 };
@@ -324,7 +326,7 @@ const addGroupUpdate = async (payload: {
       );
     }
 
-    const groups = await Groups.findById(groupId)
+    const groups = await Groups.findById(groupId);
     if (!groups) {
       throw new ApiError(httpStatus.NOT_FOUND, "Group not found");
     }
@@ -392,6 +394,8 @@ const removeGroupUpdate = async (payload: {
       throw new ApiError(httpStatus.NOT_FOUND, "Group not found in event.");
     }
 
+    console.log("update", groupId, eventId, types);
+
     const result = await Events.findByIdAndUpdate(
       eventId,
       { $pull: { groups: { gid: objectIdGroupId, type: types } } },
@@ -401,7 +405,8 @@ const removeGroupUpdate = async (payload: {
     return { message: "Group removed successfully", result };
   } catch (error: any) {
     console.error(
-      `Failed to remove group update for eventId: ${payload.eventId
+      `Failed to remove group update for eventId: ${
+        payload.eventId
       }, payload: ${JSON.stringify(payload)}`,
       error.message
     );
@@ -467,15 +472,15 @@ const getEventsGroups = async (payload: IGetGroups) => {
       },
       ...(searchQuery
         ? [
-          {
-            $match: {
-              "filteredGroups.gid.clientGroupName": {
-                $regex: searchQuery,
-                $options: "i",
+            {
+              $match: {
+                "filteredGroups.gid.clientGroupName": {
+                  $regex: searchQuery,
+                  $options: "i",
+                },
               },
             },
-          },
-        ]
+          ]
         : []),
       {
         $project: {
@@ -520,15 +525,15 @@ const getEventsGroups = async (payload: IGetGroups) => {
       },
       ...(searchQuery
         ? [
-          {
-            $match: {
-              "filteredGroups.gid.clientGroupName": {
-                $regex: searchQuery,
-                $options: "i",
+            {
+              $match: {
+                "filteredGroups.gid.clientGroupName": {
+                  $regex: searchQuery,
+                  $options: "i",
+                },
               },
             },
-          },
-        ]
+          ]
         : []),
     ]);
 
