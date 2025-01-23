@@ -1,4 +1,4 @@
-import { model, Schema } from "mongoose";
+import { model, Schema, Types } from "mongoose";
 import { GroupModels, IGroups } from "./groups.interface";
 
 const groupSchema = new Schema<IGroups, GroupModels>(
@@ -8,22 +8,25 @@ const groupSchema = new Schema<IGroups, GroupModels>(
       trim: true,
       required: [true, "Group name is required"],
     },
-    status: {
+    types: {
       type: String,
       enum: {
-        values: ["clientGroup", "volunteerGroup", "warehouseGroup"], // clientGroup | volunteerGroup | warehouseGroup
-        message: "{VALUE} is not a valid event type",
+        values: ["client", "driver", "warehouse"],
+        message: "{VALUE} is not a valid type",
       },
-      required: [true, "Status type is required"],
+      required: true,
     },
+
     volunteerType: {
       type: String,
       enum: {
         values: ["driver", "warehouse"], // driver | warehouse
         message: "{VALUE} is not a valid event type",
       },
-      required: [true, "Volunteer type is required"],
+      default: null,
+      // required: [true, "Volunteer type is required"],
     },
+    clients: [{ type: Types.ObjectId, ref: "TransportVolunteers" }],
   },
   {
     timestamps: true,

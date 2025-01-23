@@ -2,7 +2,6 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import express, { Application, NextFunction, Request, Response } from "express";
 import httpStatus from "http-status";
-import path from "path";
 import globalErrorHandler from "./app/middleware/GlobalErrorHandler";
 import router from "./app/routes/app.route";
 import databaseConnect from "./utils/server";
@@ -14,11 +13,11 @@ app.use(cors());
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
+// image access permission
+app.use("/uploads_", express.static("uploads_"));
+
 // APIs end point
 app.use("/api/v1", router);
-
-// app.use("/images", express.static(path.join(__dirname, "uploads_/")));
-app.use(express.static(path.join(__dirname, "/upload_/")));
 
 app.get("/", (req: Request, res: Response) => {
   res.status(httpStatus.OK).json({

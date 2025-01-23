@@ -6,7 +6,7 @@ type IStatus = "client" | "driver" | "warehouse";
 export type ITransportVolunteer = {
   firstName: string;
   lastName: string;
-  holocaustSurvivor?: string;
+  holocaustSurvivor: boolean;
   dateOfBirth?: string;
   phoneNo: string;
   alternativePhoneNo?: string;

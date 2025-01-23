@@ -4,7 +4,7 @@ import { paginationFields } from "../../../constant/constant";
 import CatchAsync from "../../../shared/CatchAsync";
 import pick from "../../../shared/pick";
 import SendResponse from "../../../shared/SendResponse";
-import { IClientGroup } from "./clientGroup.interface";
+import { IGroups } from "../groups/groups.interface";
 import { ClientGroupService } from "./clientGroup.service";
 
 // create a new client group
@@ -14,7 +14,7 @@ const CreateClientGroupController = CatchAsync(
 
     const result = await ClientGroupService.CreateClientGroupService(payload);
 
-    SendResponse<IClientGroup | null>(res, {
+    SendResponse<IGroups | null>(res, {
       statusCode: httpStatus.OK,
       success: true,
       message: "Client group add success!",
@@ -33,14 +33,15 @@ const GetAllClientGroupController = CatchAsync(
     ]);
 
     const paginationOptions = pick(req.query, paginationFields);
-
+    const types = req.query.types;
     const result = await ClientGroupService.GetAllClientGroupService(
       // @ts-ignore
       filters,
-      paginationOptions
+      paginationOptions,
+      types
     );
 
-    SendResponse<IClientGroup[] | null>(res, {
+    SendResponse<IGroups[] | null>(res, {
       statusCode: httpStatus.OK,
       success: true,
       message: "Client group get success!",
@@ -57,7 +58,7 @@ const GetSingleClientGroupController = CatchAsync(
 
     const result = await ClientGroupService.GetSingleClientGroupService(id);
 
-    SendResponse<Partial<IClientGroup> | null>(res, {
+    SendResponse<Partial<IGroups> | null>(res, {
       statusCode: httpStatus.OK,
       success: true,
       message: "Single group get success!",
@@ -76,7 +77,7 @@ const UpdateClientGroupController = CatchAsync(
       payload
     );
 
-    SendResponse<Partial<IClientGroup> | null>(res, {
+    SendResponse<Partial<IGroups> | null>(res, {
       statusCode: httpStatus.OK,
       success: true,
       message: "Client group updated success!",
@@ -91,11 +92,38 @@ const DeleteSingleClientGroupController = CatchAsync(
 
     const result = await ClientGroupService.DeleteClientGroupService(id);
 
-    SendResponse<Partial<IClientGroup> | null>(res, {
+    SendResponse<Partial<IGroups> | null>(res, {
       statusCode: httpStatus.OK,
       success: true,
       message: "Client group deleted success!",
       data: result,
+    });
+  }
+);
+// get all client group
+const DriverClientGroupController = CatchAsync(
+  async (req: Request, res: Response) => {
+    const filters = pick(req.query, [
+      "searchTerm",
+      "volunteerGroupName",
+      "volunteerType",
+    ]);
+
+    const paginationOptions = pick(req.query, paginationFields);
+    const types = req.query.types;
+    const result = await ClientGroupService.DriverClientGroupService(
+      // @ts-ignore
+      filters,
+      paginationOptions,
+      types
+    );
+
+    SendResponse<IGroups[] | null>(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Client group get success!",
+      meta: result.meta,
+      data: result.data,
     });
   }
 );
@@ -106,4 +134,5 @@ export const ClientController = {
   UpdateClientGroupController,
   GetSingleClientGroupController,
   DeleteSingleClientGroupController,
+  DriverClientGroupController,
 };

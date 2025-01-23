@@ -44,6 +44,7 @@ const userSchema = new Schema<IUser, UserModel>(
     role: {
       type: String,
       required: true,
+      enum: ["super_admin", "admin"],
       trim: true,
     },
     status: {

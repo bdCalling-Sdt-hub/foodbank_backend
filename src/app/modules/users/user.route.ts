@@ -7,7 +7,7 @@ const router = express.Router();
 
 router.post(
   "/create-user",
-  AuthProvider.Auth(ENUM_USER_ROLE.SUPER_ADMIN),
+  AuthProvider.Auth(ENUM_USER_ROLE.SUPER_ADMIN, ENUM_USER_ROLE.ADMIN),
   FileUploads.uploads.single("file"),
   (req: Request, res: Response, next: NextFunction) => {
     return UserController.CreateUserController(req, res, next);
@@ -18,13 +18,13 @@ router.post(
 
 router.get(
   "/",
-  // AuthProvider.Auth(ENUM_USER_ROLE.SUPER_ADMIN),
+  AuthProvider.Auth(ENUM_USER_ROLE.SUPER_ADMIN, ENUM_USER_ROLE.ADMIN),
   UserController.GetAllUserController
 );
 
 router.get(
   "/super-admin",
-  AuthProvider.Auth(ENUM_USER_ROLE.SUPER_ADMIN),
+  AuthProvider.Auth(ENUM_USER_ROLE.SUPER_ADMIN, ENUM_USER_ROLE.ADMIN),
   UserController.SuperAdminUserController
 );
 
@@ -36,7 +36,7 @@ router.get(
 
 router.patch(
   "/:id",
-  AuthProvider.Auth(ENUM_USER_ROLE.SUPER_ADMIN),
+  AuthProvider.Auth(ENUM_USER_ROLE.SUPER_ADMIN, ENUM_USER_ROLE.ADMIN),
   FileUploads.uploads.single("file"),
   async (req: Request, res: Response, next: NextFunction) => {
     try {

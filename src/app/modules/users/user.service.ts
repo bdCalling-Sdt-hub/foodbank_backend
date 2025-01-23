@@ -1,8 +1,10 @@
 import { Request } from "express";
 import httpStatus from "http-status";
 import { SortOrder } from "mongoose";
+import Config from "../../../config/Config";
 import { ENUM_USER_ROLE } from "../../../enum/role";
 import ApiError from "../../../error/APIsError";
+import { jwtTokenProvider } from "../../../helper/JTWProvider";
 import { paginationHelper } from "../../../helper/paginationHelper";
 import { IGenResponse } from "../../interfaces/Common";
 import { IUploadFile } from "../../interfaces/File";
@@ -14,13 +16,13 @@ import { UserTable } from "./user.model";
 // create user service
 const CreateUserService = async (req: Request): Promise<IUser | null> => {
   const payload: IUser = req.body;
-  console.log(req.body.data);
+  // console.log(req.body.data);
 
   // Handle file upload (profile picture)
   const file = req.file as IUploadFile;
 
   const fileName = `${file?.destination}${file.filename}`;
-  console.log(fileName);
+  // console.log(fileName);
 
   if (file) {
     payload.profilePicture = fileName;
@@ -183,12 +185,35 @@ const DeleteUserService = async (
 };
 
 // get single user service
-const SuperAdminUserService = async (): Promise<IUser | null> => {
-  const user = await UserTable.findOne({ role: "super_admin" });
+const SuperAdminUserService = async (req: Request): Promise<IUser | null> => {
+  const token = req.headers.authorization;
+
+  if (!token) {
+    throw new ApiError(httpStatus.FORBIDDEN, "Token not provided!");
+  }
+
+  // Verify the token
+  const decodedToken = jwtTokenProvider.verifyJwtToken(
+    token,
+    Config.access_key!
+  );
+
+  if (
+    !decodedToken ||
+    typeof decodedToken !== "object" ||
+    !decodedToken.email
+  ) {
+    throw new ApiError(httpStatus.UNAUTHORIZED, "Invalid token payload!");
+  }
+
+  const email = decodedToken.email;
+  // Find user by email
+  const user = await UserTable.findOne({ email: email });
 
   if (!user) {
-    throw new ApiError(httpStatus.NOT_FOUND, "Super admin does not exist!");
+    throw new ApiError(httpStatus.NOT_FOUND, "User does not exist!");
   }
+
   return user;
 };
 

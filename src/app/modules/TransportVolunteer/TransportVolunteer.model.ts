@@ -21,8 +21,10 @@ const TransportVolunteerSchema = new Schema<
     },
 
     holocaustSurvivor: {
-      type: String,
+      type: Boolean,
       trim: true,
+      required: true,
+      default: false,
     },
 
     dateOfBirth: {

@@ -94,7 +94,7 @@ const DeleteUserController = CatchAsync(async (req: Request, res: Response) => {
 // get single user
 const SuperAdminUserController = CatchAsync(
   async (req: Request, res: Response) => {
-    const result = await UserService.SuperAdminUserService();
+    const result = await UserService.SuperAdminUserService(req);
 
     SendResponse<IUser | null>(res, {
       statusCode: httpStatus.OK,

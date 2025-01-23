@@ -4,6 +4,7 @@ import { ITransportVolunteer } from "../TransportVolunteer/TransportVolunteer.in
 export type IClientGroup = {
   clientGroupName: string;
   clients: Types.Array<Schema.Types.ObjectId> | ITransportVolunteer;
+  clientGroups: Types.Array<Schema.Types.ObjectId> | IGetGroups;
 };
 
 export type IClientGroupMethods = Model<IClientGroup, Record<string, unknown>>;
