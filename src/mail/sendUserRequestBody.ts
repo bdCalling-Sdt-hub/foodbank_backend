@@ -57,6 +57,13 @@ export const sendUserRequestBody = (data: ISendMailEvent) => `
         a.button:hover {
             background-color: #1d4ed8;
         }
+        .button.cancel {
+            background-color: #dc2626;
+            margin-left: 10px;
+        }
+        .button.cancel:hover {
+            background-color: #b91c1c;
+        }
         .footer {
             font-size: 12px;
             color: #6b7280;
@@ -86,8 +93,9 @@ export const sendUserRequestBody = (data: ISendMailEvent) => `
 
         <p><strong>Your Role in the Event:</strong> ${data.type}</p>  
 
-        <p>Please click the button below to accept the request:</p>
+        <p>Please click one of the buttons below to respond to the request:</p>
         <a href="${data.frontend_url}" class="button">Accept Request</a>
+        <a href="${data.cancel_url}" class="button cancel">Cancel Request</a>
 
         <p>If you have any questions, feel free to contact us.</p>
 

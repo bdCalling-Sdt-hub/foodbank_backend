@@ -117,6 +117,39 @@ const getEventsGroups = CatchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getEventDrivers = CatchAsync(async (req: Request, res: Response) => {
+  const result = await EventService.getEventDrivers(req as any);
+  return SendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "get successfully!",
+    data: result,
+  });
+});
+
+const acceptRequest = CatchAsync(async (req: Request, res: Response) => {
+  const result = await EventService.acceptRequest(req as any);
+  return SendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Request accepted successfully!",
+    data: result,
+  });
+});
+
+const cancelRequest = CatchAsync(async (req: Request, res: Response) => {
+  const result = await EventService.cancelRequest(req as any);
+  return SendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Request canaled successfully!",
+    data: result,
+  });
+});
+
+
+
+
 export const EventController = {
   createEventsDb,
   getEvent,
@@ -128,4 +161,7 @@ export const EventController = {
   addGroupUpdate,
   removeGroupUpdate,
   getEventsGroups,
+  getEventDrivers,
+  acceptRequest,
+  cancelRequest
 };

@@ -40,6 +40,20 @@ const getEvent = async (req: Request) => {
           path: "userId",
           select: "firstName lastName holocaustSurvivor phoneNo",
         },
+      })
+      .populate({
+        path: "warehouse",
+        populate: {
+          path: "userId",
+          select: "firstName lastName holocaustSurvivor phoneNo",
+        },
+      })
+      .populate({
+        path: "driver",
+        populate: {
+          path: "userId",
+          select: "firstName lastName holocaustSurvivor phoneNo",
+        },
       });
 
     if (!event) {
@@ -50,9 +64,9 @@ const getEvent = async (req: Request) => {
     let nonHolocaustSurvivorsCount = 0;
 
     for (const clientObj of event.client) {
-      const client = await TransportVolunteerTable.findById(clientObj.userId);
+      const client: any = await TransportVolunteerTable.findById(clientObj.userId);
       if (client) {
-        if (client.holocaustSurvivor === "true") {
+        if (client.holocaustSurvivor === true) {
           holocaustSurvivorsCount++;
         } else {
           nonHolocaustSurvivorsCount++;
@@ -197,8 +211,8 @@ const addClients = async (req: Request) => {
     type === "client"
       ? "Client"
       : type === "warehouse"
-      ? "Warehouse Volunteers"
-      : "Driver Volunteers";
+        ? "Warehouse Volunteers"
+        : "Driver Volunteers";
   let existingClient;
   if (type === "client") {
     existingClient = eventDb.client.find((client) => client.email === email);
@@ -233,8 +247,8 @@ const addClients = async (req: Request) => {
     type === "client"
       ? "client"
       : type === "warehouse"
-      ? "warehouse"
-      : "driver";
+        ? "warehouse"
+        : "driver";
   const result = await Events.findByIdAndUpdate(
     eventId,
     { $push: { [updateField]: { userId, email } } },
@@ -242,14 +256,15 @@ const addClients = async (req: Request) => {
   );
   if (type !== "client") {
     // Send email request
-    await sendUserRequest({
+    const emailRes = await sendUserRequest({
       email,
       subject: "Events Request",
       html: sendUserRequestBody({
         email,
         name: `${userDb.firstName} ${userDb.lastName}`,
-        url: `http://${Config.base_url}:${Config.port}/api/v1/events/accept-request/${eventId}/${userId}`,
-        frontend_url: "http://10.0.60.118:7000/accept-request",
+        url: `http://${Config.base_url}:${Config.port}/api/v1/events/accept-request/${eventId}/${userId}/${type}`,
+        frontend_url: `http://10.0.60.44:3002/accept-request/event/${eventId}/user/${userId}/type/${type}`,
+        cancel_url: `http://10.0.60.44:3002/cancel-request/event/${eventId}/user/${userId}/type/${type}`,
         type: typeOfUser,
         event_name: eventDb.eventName,
         event_type: eventDb.eventType,
@@ -259,13 +274,107 @@ const addClients = async (req: Request) => {
         event_end_of_event: eventDb.endOfEvent,
       }),
     });
+
+    console.log('emailRes', email, emailRes)
   }
   return { message: "Client added successfully", result };
 };
 
+
+const acceptRequest = async (req: Request) => {
+  const { eventId, userId, type } = req.query as {
+    eventId: string;
+    userId: string;
+    type: string;
+  };
+
+  if (!eventId || !userId || !type) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Missing required parameters");
+  }
+
+  const eventDb = await Events.findById(eventId);
+  if (!eventDb) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Event not found");
+  }
+
+  if (type === "driver") {
+    const driver = eventDb.driver.find((driver: any) =>
+      driver.userId.equals(userId)
+    );
+    if (driver) {
+      driver.accept = true;
+    } else {
+      throw new ApiError(httpStatus.NOT_FOUND, "Driver not found");
+    }
+  } else if (type === "warehouse") {
+    const warehouse = eventDb.warehouse.find((warehouse: any) =>
+      warehouse.userId.equals(userId)
+    );
+    if (warehouse) {
+      warehouse.accept = true;
+    } else {
+      throw new ApiError(httpStatus.NOT_FOUND, "Warehouse volunteer not found");
+    }
+  } else {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      "Invalid type. Allowed types: driver, warehouse"
+    );
+  }
+  await eventDb.save();
+
+  return { message: "Request accepted successfully" };
+};
+
+const cancelRequest = async (req: Request) => {
+  const { eventId, userId, type } = req.query as {
+    eventId: string;
+    userId: string;
+    type: string;
+  };
+
+  if (!eventId || !userId || !type) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Missing required parameters");
+  }
+
+  const eventDb = await Events.findById(eventId) as any;
+  if (!eventDb) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Event not found");
+  }
+
+  if (type === "driver") {
+    const initialDriverCount = eventDb.driver.length;
+    eventDb.driver = eventDb.driver.filter(
+      (driver: any) => !driver.userId.equals(userId)
+    );
+    if (initialDriverCount === eventDb.driver.length) {
+      throw new ApiError(httpStatus.NOT_FOUND, "Driver not found");
+    }
+  } else if (type === "warehouse") {
+    const initialWarehouseCount = eventDb.warehouse.length;
+    eventDb.warehouse = eventDb.warehouse.filter(
+      (warehouse: any) => !warehouse.userId.equals(userId)
+    );
+    if (initialWarehouseCount === eventDb.warehouse.length) {
+      throw new ApiError(httpStatus.NOT_FOUND, "Warehouse volunteer not found");
+    }
+  } else {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      "Invalid type. Allowed types: driver, warehouse"
+    );
+  }
+  await eventDb.save();
+
+  return { message: "User successfully removed from the event" };
+};
+
+
 const removeClientByEmail = async (req: Request) => {
   const { eventId } = req.query;
   const { email, type } = req.body as { email: string; type: string };
+
+  console.log("email", email)
 
   const eventDb = (await Events.findById(eventId)) as IEvents;
   if (!eventDb) {
@@ -276,10 +385,10 @@ const removeClientByEmail = async (req: Request) => {
     type === "client"
       ? "client"
       : type === "warehouse"
-      ? "warehouse"
-      : type === "driver"
-      ? "driver"
-      : null;
+        ? "warehouse"
+        : type === "driver"
+          ? "driver"
+          : null;
 
   if (!updateField) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Invalid type provided.");
@@ -288,11 +397,11 @@ const removeClientByEmail = async (req: Request) => {
   const existingClient = eventDb[updateField].find(
     (entry) => entry.email === email
   );
+
   if (!existingClient) {
     throw new ApiError(
       httpStatus.NOT_FOUND,
-      `${
-        type.charAt(0).toUpperCase() + type.slice(1)
+      `${type.charAt(0).toUpperCase() + type.slice(1)
       } with this email not found in the event.`
     );
   }
@@ -304,9 +413,8 @@ const removeClientByEmail = async (req: Request) => {
   );
 
   return {
-    message: `${
-      type.charAt(0).toUpperCase() + type.slice(1)
-    } removed successfully`,
+    message: `${type.charAt(0).toUpperCase() + type.slice(1)
+      } removed successfully`,
     result,
   };
 };
@@ -405,8 +513,7 @@ const removeGroupUpdate = async (payload: {
     return { message: "Group removed successfully", result };
   } catch (error: any) {
     console.error(
-      `Failed to remove group update for eventId: ${
-        payload.eventId
+      `Failed to remove group update for eventId: ${payload.eventId
       }, payload: ${JSON.stringify(payload)}`,
       error.message
     );
@@ -472,15 +579,15 @@ const getEventsGroups = async (payload: IGetGroups) => {
       },
       ...(searchQuery
         ? [
-            {
-              $match: {
-                "filteredGroups.gid.clientGroupName": {
-                  $regex: searchQuery,
-                  $options: "i",
-                },
+          {
+            $match: {
+              "filteredGroups.gid.clientGroupName": {
+                $regex: searchQuery,
+                $options: "i",
               },
             },
-          ]
+          },
+        ]
         : []),
       {
         $project: {
@@ -525,15 +632,15 @@ const getEventsGroups = async (payload: IGetGroups) => {
       },
       ...(searchQuery
         ? [
-            {
-              $match: {
-                "filteredGroups.gid.clientGroupName": {
-                  $regex: searchQuery,
-                  $options: "i",
-                },
+          {
+            $match: {
+              "filteredGroups.gid.clientGroupName": {
+                $regex: searchQuery,
+                $options: "i",
               },
             },
-          ]
+          },
+        ]
         : []),
     ]);
 
@@ -557,6 +664,70 @@ const getEventsGroups = async (payload: IGetGroups) => {
   }
 };
 
+const getEventDrivers = async (req: Request) => {
+  try {
+    const { eventId, page = 1, limit = 10, searchTerm, accept, types } = req.query;
+
+    if (!eventId) {
+      throw new ApiError(httpStatus.BAD_REQUEST, "Event ID is required");
+    }
+
+    const event = await Events.findById(eventId).populate({
+      path: "driver.userId",
+      // select: "firstName lastName email",
+    })
+      .populate({
+        path: "warehouse.userId",
+        // select: "firstName lastName email",
+      })
+
+    if (!event) {
+      throw new ApiError(httpStatus.NOT_FOUND, "Event not found");
+    }
+
+    let drivers;
+    if (types === "driver") {
+      drivers = event.driver.filter((driver) => accept === "yes" ? driver.accept : !driver.accept);
+    } else if (types === "warehouse") {
+      drivers = event.warehouse.filter((driver) => accept === "yes" ? driver.accept : !driver.accept);
+    } else {
+      throw new ApiError(httpStatus.NOT_FOUND, "Invalid types")
+    }
+
+
+    if (searchTerm) {
+      const regex = new RegExp(searchTerm as string, "i");
+      drivers = drivers.filter((driver: any) => {
+        const { firstName, lastName } = driver.userId || {};
+        return regex.test(firstName || "") || regex.test(lastName || "");
+      });
+    }
+
+    // Pagination logic
+    const pageNumber = parseInt(page as string, 10);
+    const pageLimit = parseInt(limit as string, 10);
+    const paginatedDrivers = drivers.slice(
+      (pageNumber - 1) * pageLimit,
+      pageNumber * pageLimit
+    );
+
+    return {
+      data: paginatedDrivers,
+      meta: {
+        totalCount: drivers.length,
+        currentPage: pageNumber,
+        totalPages: Math.ceil(drivers.length / pageLimit),
+        pageLimit,
+      },
+    };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    throw new ApiError(httpStatus.BAD_REQUEST, message);
+  }
+};
+
+
+
 export const EventService = {
   createEvent,
   getEvent,
@@ -568,4 +739,7 @@ export const EventService = {
   addGroupUpdate,
   removeGroupUpdate,
   getEventsGroups,
+  getEventDrivers,
+  acceptRequest,
+  cancelRequest
 };
