@@ -52,7 +52,7 @@ const getEvent = async (req: Request) => {
     for (const clientObj of event.client) {
       const client = await TransportVolunteerTable.findById(clientObj.userId);
       if (client) {
-        if (client.holocaustSurvivor === "true") {
+        if (client.holocaustSurvivor === true) {
           holocaustSurvivorsCount++;
         } else {
           nonHolocaustSurvivorsCount++;
