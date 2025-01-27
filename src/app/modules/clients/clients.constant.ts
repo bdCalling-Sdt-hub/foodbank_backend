@@ -1,8 +1,8 @@
 export const KeyOfFilterForClientSearchTerm = [
   "firstName",
+  "searchTerm",
   "lastName",
   "email",
-  "holocaustSurvivor",
   "dateOfBirth",
   "address",
   "apartment",
@@ -18,7 +18,6 @@ export const KeyOfFilterForFiltersKey = [
   "firstName",
   "lastName",
   "email",
-  "holocaustSurvivor",
   "dateOfBirth",
   "address",
   "apartment",
