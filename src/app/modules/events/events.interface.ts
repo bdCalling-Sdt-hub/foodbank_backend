@@ -33,6 +33,7 @@ type ISendMailEvent = {
   url: string;
   type: string;
   frontend_url: string;
+  cancel_url: string;
   event_name: string;
   event_type: string;
   event_location: string;

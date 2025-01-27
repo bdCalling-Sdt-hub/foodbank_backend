@@ -36,6 +36,18 @@ router
     EventController.addClients
   )
   .patch(
+    "/accept-request",
+    // AuthProvider.Auth(ENUM_USER_ROLE.SUPER_ADMIN, ENUM_USER_ROLE.ADMIN),
+    EventController.acceptRequest
+  )
+  .patch(
+    "/cancel-request",
+    // AuthProvider.Auth(ENUM_USER_ROLE.SUPER_ADMIN, ENUM_USER_ROLE.ADMIN),
+    EventController.cancelRequest
+  )
+
+
+  .patch(
     "/add-groups",
     // AuthProvider.Auth(ENUM_USER_ROLE.SUPER_ADMIN, ENUM_USER_ROLE.ADMIN),
     EventController.addGroupUpdate
@@ -54,6 +66,12 @@ router
     "/get-groups",
     AuthProvider.Auth(ENUM_USER_ROLE.SUPER_ADMIN, ENUM_USER_ROLE.ADMIN),
     EventController.getEventsGroups
-  );
+  )
+  .get(
+    "/get-events-driver",
+    // AuthProvider.Auth(ENUM_USER_ROLE.SUPER_ADMIN, ENUM_USER_ROLE.ADMIN),
+    EventController.getEventDrivers
+  )
+
 
 export const EventRouters = router;
