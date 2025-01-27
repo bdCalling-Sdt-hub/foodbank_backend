@@ -37,7 +37,7 @@ const GetSingleWarehouseController = CatchAsync(
     const { id } = req.params;
     const result = await WarehouseService.GetSingleWarehouseService(id);
 
-    SendResponse<Partial<ITransportVolunteer>>(res, {
+    SendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
       message: "Single warehouse get success!",
