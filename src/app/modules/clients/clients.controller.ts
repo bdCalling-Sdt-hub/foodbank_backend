@@ -38,7 +38,7 @@ const GetSingleClientController = CatchAsync(
 
     const result = await ClientService.GetSingleTransportClientService(id);
 
-    SendResponse<Partial<ITransportVolunteer>>(res, {
+    SendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
       message: "Single client get success",

@@ -280,7 +280,6 @@ const addClients = async (req: Request) => {
   return { message: "Client added successfully", result };
 };
 
-
 const acceptRequest = async (req: Request) => {
   const { eventId, userId, type } = req.query as {
     eventId: string;
@@ -368,7 +367,6 @@ const cancelRequest = async (req: Request) => {
 
   return { message: "User successfully removed from the event" };
 };
-
 
 const removeClientByEmail = async (req: Request) => {
   const { eventId } = req.query;

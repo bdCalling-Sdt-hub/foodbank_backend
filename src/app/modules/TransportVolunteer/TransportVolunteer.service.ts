@@ -10,6 +10,7 @@ import {
   ITransportVolunteerFilters,
 } from "./TransportVolunteer.interface";
 import { TransportVolunteerTable } from "./TransportVolunteer.model";
+import Events from "../events/events.model";
 
 // Create transport volunteer service
 const CreateTransportVolunteerService = async (
@@ -77,7 +78,7 @@ const GetAllTransportVolunteerService = async (
 // get single transport volunteer service
 const GetSingleTransportVolunteerService = async (
   id: string
-): Promise<ITransportVolunteer | null> => {
+) => {
   const result = await TransportVolunteerTable.findById(id).populate(
     "meetings"
   );
@@ -86,7 +87,11 @@ const GetSingleTransportVolunteerService = async (
     throw new ApiError(httpStatus.NOT_FOUND, "Invalid volunteer!");
   }
 
-  return result;
+  const events = await Events.find({
+    driver: { $elemMatch: { userId: id } },
+  }).select("eventName eventType endOfEvent dayOfEvent endOfEvent location")
+
+  return { result, events };
 };
 
 // Update single transport volunteer service

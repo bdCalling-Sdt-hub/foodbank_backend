@@ -57,7 +57,7 @@ const GetSingleTransportVolunteerController = CatchAsync(
     const result =
       await TransportVolunteerService.GetSingleTransportVolunteerService(id);
 
-    SendResponse<ITransportVolunteer | null>(res, {
+    SendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
       message: "Single volunteer get success!",

@@ -9,6 +9,7 @@ import { ClientGroupTable } from "../clientGroup/clientGroup.model";
 import { KeyOfFilterForClientSearchTerm } from "../clients/clients.constant";
 import { IClientFilterKey } from "../clients/clients.interface";
 import { VolunteerGroupT } from "../volunteerGroup/volunteerGroup.model";
+import Events from "../events/events.model";
 
 const GetAllWarehouseService = async (
   filters: IClientFilterKey,
@@ -75,7 +76,7 @@ const GetAllWarehouseService = async (
 // get single Warehouse
 const GetSingleWarehouseService = async (
   id: string
-): Promise<Partial<ITransportVolunteer>> => {
+) => {
   const warehouse = await TransportVolunteerTable.findById(id).populate(
     "meetings"
   );
@@ -84,7 +85,11 @@ const GetSingleWarehouseService = async (
     throw new ApiError(httpStatus.NOT_FOUND, "Client does not exists!");
   }
 
-  return warehouse;
+  const events = await Events.find({
+    warehouse: { $elemMatch: { userId: id } },
+  }).select("eventName eventType endOfEvent dayOfEvent endOfEvent location")
+
+  return { warehouse, events };
 };
 
 // update single drive

@@ -10,6 +10,7 @@ import { TransportVolunteerTable } from "../TransportVolunteer/TransportVoluntee
 import { VolunteerGroupT } from "../volunteerGroup/volunteerGroup.model";
 import { KeyOfFilterForClientSearchTerm } from "./clients.constant";
 import { IClientFilterKey } from "./clients.interface";
+import Events from "../events/events.model";
 
 // ------------------CLIENT APIs endpoint------------------
 const GetAllClientService = async (
@@ -83,8 +84,14 @@ const GetSingleTransportClientService = async (id: string) => {
   if (!filterClient) {
     throw new ApiError(httpStatus.NOT_FOUND, "Client does not exists!");
   }
+  const events = await Events.find({
+    client: { $elemMatch: { userId: id } },
+  }).select("eventName eventType endOfEvent dayOfEvent endOfEvent location")
 
-  return filterClient;
+  // console.log('=============================', events);
+
+
+  return { filterClient, events };
 };
 
 // update client
