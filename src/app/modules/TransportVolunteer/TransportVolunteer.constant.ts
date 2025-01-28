@@ -20,7 +20,7 @@ export const TransportVolunteerSearchTermsFields = [
   "firstName",
   "lastName",
   "email",
-  "holocaustSurvivor",
+  // "holocaustSurvivor",
   "dateOfBirth",
   "address",
   "apartment",

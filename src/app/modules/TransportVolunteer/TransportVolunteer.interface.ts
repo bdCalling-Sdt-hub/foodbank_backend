@@ -40,7 +40,7 @@ export type ITransportVolunteerFilters = {
   searchTerm?: string;
   firstName: string;
   lastName: string;
-  holocaustSurvivor?: string;
+  holocaustSurvivor?: boolean;
   dateOfBirth?: string;
   phoneNo: string;
   alternativePhoneNo?: string;
