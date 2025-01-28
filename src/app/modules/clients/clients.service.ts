@@ -16,9 +16,14 @@ const GetAllClientService = async (
   filters: IClientFilterKey,
   paginationOptions: IPaginationOptions
 ): Promise<IGenResponse<ITransportVolunteer[]>> => {
+  // @ts-ignore
+  filters.holocaustSurvivor === "" && delete filters.holocaustSurvivor;
+
   const { searchTerm, status, ...searchTermData } = filters;
 
   const andConditions = [];
+
+  console.log(filters);
 
   // Add status filter
   andConditions.push({ status: "client" });
