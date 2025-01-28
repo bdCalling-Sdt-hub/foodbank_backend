@@ -725,7 +725,6 @@ const getEventDrivers = async (req: Request) => {
 };
 
 
-
 export const EventService = {
   createEvent,
   getEvent,
