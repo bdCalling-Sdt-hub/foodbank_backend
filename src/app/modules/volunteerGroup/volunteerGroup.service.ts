@@ -134,7 +134,7 @@ const GetSingleVolunteerGroupService = async (
 
   const total = totalClients?.clients.length || 0;
   const totalPages = Math.ceil(total / limit);
-
+  // @ts-ignore
   return { result, total: totalPages, page, limit, };
 };
 

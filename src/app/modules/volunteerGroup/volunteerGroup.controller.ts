@@ -81,7 +81,7 @@ const GetSingleVolunteerGroupController = CatchAsync(
 
     const result = await VolunteerGroupService.GetSingleVolunteerGroupService(id, search, page, limit);
 
-    SendResponse<IGroups>(res, {
+    SendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
       message: "Single volunteer group get success!",

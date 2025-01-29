@@ -41,20 +41,21 @@ router.patch(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params;
-      let updateData: any = req.body.data;
-
+      let updateData: any = req.body;
+      console.log("Parsed Update Data:", req?.file);
       if (updateData) {
         updateData =
           typeof updateData === "string" ? JSON.parse(updateData) : updateData;
       }
 
-      const file = req.file;
+      const file = req?.file;
+
 
       if (file) {
         updateData.profilePicture = file.path;
       }
 
-      // console.log("Parsed Update Data:", updateData);
+
 
       const updatedUser = await UserController.UpdateUserController(
         id,
@@ -82,7 +83,7 @@ router.patch(
 
 router.delete(
   "/:id",
-  AuthProvider.Auth(ENUM_USER_ROLE.SUPER_ADMIN),
+  AuthProvider.Auth(ENUM_USER_ROLE.SUPER_ADMIN, ENUM_USER_ROLE.ADMIN),
   UserController.DeleteUserController
 );
 
