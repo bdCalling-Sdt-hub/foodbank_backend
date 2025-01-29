@@ -95,6 +95,7 @@ userSchema.methods.isPasswordMatch = async function (
 
 // password hash before save password
 userSchema.pre("save", async function (next) {
+  console.log("this.password,", this.password,)
   this.password = await bcrypt.hash(
     this.password,
     Number(Config.password_sold_round)

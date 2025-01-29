@@ -101,6 +101,9 @@ const UpdateSingleTransportVolunteerService = async (
 ): Promise<Partial<ITransportVolunteer> | null> => {
   const result = await TransportVolunteerTable.findById(id);
 
+  console.log("result=============", result);
+  console.log("payload=============", payload);
+
   if (!result) {
     throw new ApiError(httpStatus.NOT_FOUND, "Invalid volunteer!");
   }
@@ -110,7 +113,7 @@ const UpdateSingleTransportVolunteerService = async (
     { $set: payload },
     { new: true, runValidators: true }
   );
-
+  console.log("updateVolunteer=============", updateVolunteer);
   return updateVolunteer;
 };
 

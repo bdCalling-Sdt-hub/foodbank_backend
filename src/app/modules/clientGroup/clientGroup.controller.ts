@@ -112,6 +112,8 @@ const DriverClientGroupController = CatchAsync(
       "volunteerType",
     ]);
 
+    console.log("===", req.query)
+
     const paginationOptions = pick(req.query, paginationFields);
     const types = req.query.types;
     const result = await ClientGroupService.DriverClientGroupService(

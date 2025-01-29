@@ -91,11 +91,14 @@ const UpdateVolunteerGroupService = async (
     throw new ApiError(httpStatus.NOT_FOUND, "Group does not exists!");
   }
 
+  console.log("payload", payload)
+
   const result = await VolunteerGroupT.findByIdAndUpdate(
     id,
     { $set: payload },
     { new: true, runValidators: true }
   ).populate("volunteers");
+  console.log("result", result)
   return result;
 };
 

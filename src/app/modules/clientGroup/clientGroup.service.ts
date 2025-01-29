@@ -177,6 +177,7 @@ const GetSingleClientGroupService = async (
   const total = Math.ceil(totalClients / limit);
 
   return {
+    // @ts-ignore
     result,
     meta: {
       totalClients,
