@@ -3,7 +3,7 @@ export const paginationFilterableKey = [
   "firstName",
   "lastName",
   "email",
-  "holocaustSurvivor",
+  // "holocaustSurvivor",
   "dateOfBirth",
   "address",
   "apartment",

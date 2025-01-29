@@ -4,13 +4,13 @@ import ApiError from "../../../error/APIsError";
 import { paginationHelper } from "../../../helper/paginationHelper";
 import { IGenResponse } from "../../interfaces/Common";
 import { IPaginationOptions } from "../../interfaces/interfaces";
+import Events from "../events/events.model";
 import { TransportVolunteerSearchTermsFields } from "./TransportVolunteer.constant";
 import {
   ITransportVolunteer,
   ITransportVolunteerFilters,
 } from "./TransportVolunteer.interface";
 import { TransportVolunteerTable } from "./TransportVolunteer.model";
-import Events from "../events/events.model";
 
 // Create transport volunteer service
 const CreateTransportVolunteerService = async (
@@ -76,9 +76,7 @@ const GetAllTransportVolunteerService = async (
 };
 
 // get single transport volunteer service
-const GetSingleTransportVolunteerService = async (
-  id: string
-) => {
+const GetSingleTransportVolunteerService = async (id: string) => {
   const result = await TransportVolunteerTable.findById(id).populate(
     "meetings"
   );
@@ -89,7 +87,7 @@ const GetSingleTransportVolunteerService = async (
 
   const events = await Events.find({
     driver: { $elemMatch: { userId: id } },
-  }).select("eventName eventType endOfEvent dayOfEvent endOfEvent location")
+  }).select("eventName eventType endOfEvent dayOfEvent endOfEvent location");
 
   return { result, events };
 };

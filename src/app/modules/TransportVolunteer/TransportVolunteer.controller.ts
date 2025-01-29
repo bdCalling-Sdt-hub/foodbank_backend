@@ -113,6 +113,7 @@ const GetAllDriverWarehouseTransportVolunteerController = CatchAsync(
 
     const result =
       await TransportVolunteerService.GetAllDriverWarehouseTransportVolunteerService(
+        // @ts-ignore
         filters,
         paginationOptions
       );
@@ -121,6 +122,7 @@ const GetAllDriverWarehouseTransportVolunteerController = CatchAsync(
       statusCode: httpStatus.OK,
       success: true,
       message: "Driver & warehouse get success!",
+      // @ts-ignore
       data: result,
     });
   }
