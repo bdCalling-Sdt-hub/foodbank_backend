@@ -17,9 +17,17 @@ router.get(
 );
 router.get(
   "/driver-client",
-  AuthProvider.Auth(ENUM_USER_ROLE.SUPER_ADMIN, ENUM_USER_ROLE.ADMIN),
+  // AuthProvider.Auth(ENUM_USER_ROLE.SUPER_ADMIN, ENUM_USER_ROLE.ADMIN),
   ClientController.DriverClientGroupController
 );
+
+router.get(
+  "/driver-modify-client",
+  // AuthProvider.Auth(ENUM_USER_ROLE.SUPER_ADMIN, ENUM_USER_ROLE.ADMIN),
+  ClientController.DriverClientGroupsModifyController
+);
+
+
 router.patch(
   "/:id",
   AuthProvider.Auth(ENUM_USER_ROLE.SUPER_ADMIN, ENUM_USER_ROLE.ADMIN),
@@ -35,5 +43,7 @@ router.delete(
   AuthProvider.Auth(ENUM_USER_ROLE.SUPER_ADMIN, ENUM_USER_ROLE.ADMIN),
   ClientController.DeleteSingleClientGroupController
 );
+
+
 
 export const ClientGroupRoutes = router;

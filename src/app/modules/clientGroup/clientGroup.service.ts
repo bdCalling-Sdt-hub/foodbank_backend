@@ -21,9 +21,11 @@ const CreateClientGroupService = async (payload: IGroups): Promise<IGroups> => {
 const GetAllClientGroupService = async (
   filters: IClientGroupFilters,
   paginationOptions: IPaginationOptions,
-  types: string
+  types: string,
 ): Promise<IGenResponse<IGroups[]>> => {
   const { searchTerm, ...searchTermData } = filters;
+
+  console.log('=====================', filters)
 
 
   const andConditions = [];
@@ -66,6 +68,10 @@ const GetAllClientGroupService = async (
 
   const total = await Groups.countDocuments({ types });
 
+  console.log("==================", page,
+    limit,
+    total,)
+
   return {
     meta: {
       page,
@@ -83,7 +89,7 @@ const DriverClientGroupService = async (
 ): Promise<IGenResponse<IGroups[]>> => {
   const { searchTerm, ...searchTermData } = filters;
 
-  console.log("types=-===========");
+  console.log("types=-===========", searchTermData);
 
   const andConditions = [];
   if (searchTerm) {
@@ -134,6 +140,80 @@ const DriverClientGroupService = async (
     data: result,
   };
 };
+const DriverClientGroupsModifyService = async (
+  filters: IClientGroupFilters,
+  paginationOptions: IPaginationOptions,
+  types: string = "driver,warehouse"
+): Promise<IGenResponse<IGroups[]>> => {
+  const { searchTerm, volunteerType, ...searchTermData } = filters;
+
+  console.log("Filters:", volunteerType);
+
+  const andConditions = [];
+
+  if (searchTerm) {
+    andConditions.push({
+      $or: ["groupName"].map((field) => ({
+        [field]: {
+          $regex: searchTerm,
+          $options: "i",
+        },
+      })),
+    });
+  }
+
+  if (Object.keys(searchTermData).length) {
+    andConditions.push({
+      $and: Object.entries(searchTermData).map(([field, value]) => ({
+        [field]: value,
+      })),
+    });
+  }
+
+  const typeArray = types ? types.split(",") : ["driver", "warehouse"];
+
+  const whereConditions: any = { types: { $in: typeArray } };
+
+  if (volunteerType) {
+    whereConditions.types = volunteerType;
+  }
+
+  console.log("whereConditions.volunteerType ", whereConditions.volunteerType);
+
+  if (andConditions.length) {
+    whereConditions.$and = andConditions;
+  }
+
+  // Pagination and sorting
+  const { page, limit, skip, sortBy = "createdAt", sortOrder = "desc" } =
+    paginationHelper.paginationCalculation(paginationOptions);
+
+  const sortConditions: { [key: string]: SortOrder } = {
+    [sortBy]: sortOrder === "asc" ? 1 : -1,
+  };
+
+  console.log("Sorting by:", sortConditions);
+
+  // Fetch results
+  const result = await Groups.find(whereConditions)
+    .populate("clients")
+    .sort(sortConditions)
+    .limit(limit)
+    .skip(skip);
+
+  const total = await Groups.countDocuments(whereConditions);
+
+  return {
+    meta: {
+      page,
+      limit,
+      total,
+    },
+    data: result,
+  };
+};
+
+
 //single client group service
 const GetSingleClientGroupService = async (
   id: string,
@@ -173,8 +253,17 @@ const GetSingleClientGroupService = async (
     ...searchQuery,
   });
 
+  const groups = await Groups.findById(id) as IGroups;
+
   // Calculate total pages
-  const total = Math.ceil(totalClients / limit);
+  const total = groups?.clients?.length;
+
+  console.log("Total pages: ", total)
+
+  console.log(totalClients,
+    total,
+    page,
+    limit,);
 
   return {
     // @ts-ignore
@@ -239,4 +328,5 @@ export const ClientGroupService = {
   GetSingleClientGroupService,
   DeleteClientGroupService,
   DriverClientGroupService,
+  DriverClientGroupsModifyService
 };

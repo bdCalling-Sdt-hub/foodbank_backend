@@ -28,6 +28,8 @@ const GetAllClientGroupController = CatchAsync(
       "searchTerm",
       "volunteerGroupName",
       "volunteerType",
+      'page',
+      "limit"
     ]);
 
 
@@ -56,12 +58,9 @@ const GetSingleClientGroupController = CatchAsync(
     const { id } = req.params;
     const { searchTerm: search, page, limit } = req.query as any;
 
-
-    console.log(`GetSingleClientGroupController`, req.query);
-
     const result = await ClientGroupService.GetSingleClientGroupService(id, search, page, limit);
 
-    SendResponse<Partial<IGroups> | null>(res, {
+    SendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
       message: "Single group get success!",
@@ -133,6 +132,35 @@ const DriverClientGroupController = CatchAsync(
   }
 );
 
+const DriverClientGroupsModifyController = CatchAsync(
+  async (req: Request, res: Response) => {
+    const filters = pick(req.query, [
+      "searchTerm",
+      "volunteerGroupName",
+      "volunteerType",
+    ]);
+
+    console.log("===", req.query)
+
+    const paginationOptions = pick(req.query, paginationFields);
+    const types = req.query.types;
+    const result = await ClientGroupService.DriverClientGroupsModifyService(
+      // @ts-ignore
+      filters,
+      paginationOptions,
+      types
+    );
+
+    SendResponse<IGroups[] | null>(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Client group get success!",
+      meta: result.meta,
+      data: result.data,
+    });
+  }
+);
+
 export const ClientController = {
   CreateClientGroupController,
   GetAllClientGroupController,
@@ -140,4 +168,5 @@ export const ClientController = {
   GetSingleClientGroupController,
   DeleteSingleClientGroupController,
   DriverClientGroupController,
+  DriverClientGroupsModifyController
 };
