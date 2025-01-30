@@ -113,12 +113,11 @@ const GetAllDriverWarehouseTransportVolunteerController = CatchAsync(
 
     const result =
       await TransportVolunteerService.GetAllDriverWarehouseTransportVolunteerService(
-        // @ts-ignore
         filters,
         paginationOptions
       );
 
-    SendResponse<ITransportVolunteer[] | null>(res, {
+    SendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
       message: "Driver & warehouse get success!",

@@ -121,19 +121,23 @@ const ChangePasswordService = async (payload: IChangePassword) => {
   // Verify the old password
   const isOldPasswordMatch = await bcrypt.compare(oldPassword, user.password);
   if (!isOldPasswordMatch) {
-    throw new ApiError(httpStatus.NOT_FOUND, "Old password is incorrect");
+    throw new ApiError(httpStatus.UNAUTHORIZED, "Old password is incorrect");
   }
 
   // Hash the new password
-  const hashedNewPassword = await bcrypt.hash(
-    newPassword,
-    Number(Config.password_sold_round)
-  );
+  // const hashedNewPassword = await bcrypt.hash(
+  //   newPassword,
+  //   Number(Config.password_sold_round)
+  // );
 
-  // Save the password
-  user.password = hashedNewPassword;
+  user.password = newPassword;
   await user.save();
+
+  console.log("User saved", user);
+
+  return { message: "Password changed successfully" };
 };
+
 
 // forgot password
 const forgotPasswordService = async (payload: IForgot) => {
