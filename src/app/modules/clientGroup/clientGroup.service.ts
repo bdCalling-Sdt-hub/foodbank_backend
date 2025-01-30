@@ -145,6 +145,7 @@ const DriverClientGroupsModifyService = async (
   paginationOptions: IPaginationOptions,
   types: string = "driver,warehouse"
 ): Promise<IGenResponse<IGroups[]>> => {
+  //@ts-ignore
   const { searchTerm, volunteerType, ...searchTermData } = filters;
 
   console.log("Filters:", volunteerType);
