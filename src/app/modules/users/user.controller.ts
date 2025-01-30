@@ -104,6 +104,19 @@ const SuperAdminUserController = CatchAsync(
     });
   }
 );
+//Update user role
+const UpdateUserRoleController = CatchAsync(
+  async (req: Request, res: Response) => {
+    const result = await UserService.UpdateUserRoleService(req);
+
+    SendResponse<Partial<IUser> | null>(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Role update success!",
+      data: result,
+    });
+  }
+);
 
 export const UserController = {
   CreateUserController,
@@ -112,4 +125,5 @@ export const UserController = {
   UpdateUserController,
   DeleteUserController,
   SuperAdminUserController,
+  UpdateUserRoleController,
 };

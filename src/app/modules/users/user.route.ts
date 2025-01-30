@@ -18,7 +18,7 @@ router.post(
 
 router.get(
   "/",
-  AuthProvider.Auth(ENUM_USER_ROLE.SUPER_ADMIN, ENUM_USER_ROLE.ADMIN),
+  // AuthProvider.Auth(ENUM_USER_ROLE.SUPER_ADMIN, ENUM_USER_ROLE.ADMIN),
   UserController.GetAllUserController
 );
 
@@ -50,12 +50,9 @@ router.patch(
 
       const file = req?.file;
 
-
       if (file) {
         updateData.profilePicture = file.path;
       }
-
-
 
       const updatedUser = await UserController.UpdateUserController(
         id,
@@ -75,11 +72,7 @@ router.patch(
   }
 );
 
-// router.patch(
-//   "/:id",
-//   AuthProvider.Auth(ENUM_USER_ROLE.SUPER_ADMIN, ENUM_USER_ROLE.ADMIN),
-//   UserController.UpdateUserController
-// );
+router.patch("/update-role/:id", UserController.UpdateUserRoleController);
 
 router.delete(
   "/:id",

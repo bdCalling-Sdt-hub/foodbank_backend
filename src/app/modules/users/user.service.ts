@@ -53,9 +53,9 @@ const CreateUserService = async (req: Request): Promise<IUser | null> => {
   payload.status = true;
 
   // Parse and modify the data object
-  const data = req.body
+  const data = req.body;
 
-  console.log("=======", data)
+  console.log("=======", data);
 
   // Add profilePicture and role to the data object
   data.profilePicture = payload.profilePicture;
@@ -160,8 +160,7 @@ const UpdateUserService = async (
 const DeleteUserService = async (
   id: string
 ): Promise<Partial<IUser> | null> => {
-
-  console.log("id====================", id)
+  console.log("id====================", id);
   // Validate if id is provided
   if (!id) {
     throw new ApiError(httpStatus.BAD_REQUEST, "User ID is required!");
@@ -169,7 +168,7 @@ const DeleteUserService = async (
 
   const isSupperAdmin = await UserTable.findById(id);
 
-  console.log("isSupperAdmin", isSupperAdmin)
+  console.log("isSupperAdmin", isSupperAdmin);
 
   // If the user doesn't exist
   if (!isSupperAdmin) {
@@ -221,6 +220,34 @@ const SuperAdminUserService = async (req: Request): Promise<IUser | null> => {
   return user;
 };
 
+// Update user service
+const UpdateUserRoleService = async (
+  req: Request
+): Promise<Partial<IUser> | null> => {
+  const { id } = req.params;
+  const payload = req.body;
+
+  if (!id) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "User ID is required!");
+  }
+
+  const isSuperAdminExist = await UserTable.findById(id);
+  let updatedUser;
+
+  if (isSuperAdminExist) {
+    throw new ApiError(httpStatus.FORBIDDEN, "Super admin already exist!");
+  } else {
+    // Update the user and return the updated document
+    updatedUser = await UserTable.findByIdAndUpdate(
+      id,
+      { $set: payload },
+      { new: true, runValidators: true }
+    );
+  }
+
+  return updatedUser;
+};
+
 export const UserService = {
   CreateUserService,
   GetAllUserService,
@@ -228,4 +255,5 @@ export const UserService = {
   UpdateUserService,
   DeleteUserService,
   SuperAdminUserService,
+  UpdateUserRoleService,
 };
