@@ -27,7 +27,7 @@ router.patch(
 );
 router.get(
   "/:id",
-  AuthProvider.Auth(ENUM_USER_ROLE.SUPER_ADMIN, ENUM_USER_ROLE.ADMIN),
+  // AuthProvider.Auth(ENUM_USER_ROLE.SUPER_ADMIN, ENUM_USER_ROLE.ADMIN),
   ClientController.GetSingleClientGroupController
 );
 router.delete(

@@ -6,6 +6,7 @@ import pick from "../../../shared/pick";
 import SendResponse from "../../../shared/SendResponse";
 import { IVolunteerGroup } from "./volunteerGroup.interface";
 import { VolunteerGroupService } from "./volunteerGroup.service";
+import { IGroups } from "../groups/groups.interface";
 
 // add a new group
 const CreateVolunteerGroupController = CatchAsync(
@@ -73,11 +74,14 @@ const UpdateVolunteerGroupController = CatchAsync(
 const GetSingleVolunteerGroupController = CatchAsync(
   async (req: Request, res: Response) => {
     const { id } = req.params;
-    const result = await VolunteerGroupService.GetSingleVolunteerGroupService(
-      id
-    );
+    const { searchTerm: search, page, limit } = req.query as any;
 
-    SendResponse<IVolunteerGroup>(res, {
+
+    console.log(`GetSingleVolunteerGroupController`, req.query);
+
+    const result = await VolunteerGroupService.GetSingleVolunteerGroupService(id, search, page, limit);
+
+    SendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
       message: "Single volunteer group get success!",

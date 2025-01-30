@@ -16,12 +16,12 @@ import { UserTable } from "./user.model";
 // create user service
 const CreateUserService = async (req: Request): Promise<IUser | null> => {
   const payload: IUser = req.body;
-  // console.log(req.body.data);
+  console.log(req.body);
 
   // Handle file upload (profile picture)
-  const file = req.file as IUploadFile;
+  const file = req?.file as IUploadFile;
 
-  const fileName = `${file?.destination}${file.filename}`;
+  const fileName = `${file?.destination}${file?.filename}`;
   // console.log(fileName);
 
   if (file) {
@@ -48,14 +48,14 @@ const CreateUserService = async (req: Request): Promise<IUser | null> => {
   if (!payload.role) {
     payload.role = "admin";
   }
-
   console.log(file);
-
   // Set user status
   payload.status = true;
 
   // Parse and modify the data object
-  const data = JSON.parse(req.body.data);
+  const data = req.body
+
+  console.log("=======", data)
 
   // Add profilePicture and role to the data object
   data.profilePicture = payload.profilePicture;
@@ -160,12 +160,16 @@ const UpdateUserService = async (
 const DeleteUserService = async (
   id: string
 ): Promise<Partial<IUser> | null> => {
+
+  console.log("id====================", id)
   // Validate if id is provided
   if (!id) {
     throw new ApiError(httpStatus.BAD_REQUEST, "User ID is required!");
   }
 
   const isSupperAdmin = await UserTable.findById(id);
+
+  console.log("isSupperAdmin", isSupperAdmin)
 
   // If the user doesn't exist
   if (!isSupperAdmin) {

@@ -1,9 +1,11 @@
 import httpStatus from "http-status";
-import mongoose, { SortOrder } from "mongoose";
+import mongoose, { SortOrder, Types } from "mongoose";
 import ApiError from "../../../error/APIsError";
 import { paginationHelper } from "../../../helper/paginationHelper";
 import { IGenResponse } from "../../interfaces/Common";
 import { IPaginationOptions } from "../../interfaces/interfaces";
+import { IGroups } from "../groups/groups.interface";
+import { Groups } from "../groups/groups.model";
 import { IVolunteerFilters, IVolunteerGroup } from "./volunteerGroup.interface";
 import { VolunteerGroupT } from "./volunteerGroup.model";
 
@@ -97,16 +99,48 @@ const UpdateVolunteerGroupService = async (
   return result;
 };
 
-// Get single volunteer group
 const GetSingleVolunteerGroupService = async (
-  id: string
-): Promise<IVolunteerGroup | null> => {
-  const isExist = await VolunteerGroupT.findById(id).populate("volunteers");
-  if (!isExist) {
-    throw new ApiError(httpStatus.NOT_FOUND, "Group does not exists!");
+  id: string,
+  search: string = "",
+  page: number = 1,
+  limit: number = 10
+): Promise<{ result: IGroups | null; total: number; totalPages: number }> => {
+  if (!Types.ObjectId.isValid(id)) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Invalid group ID");
   }
 
-  return isExist;
+  const skip = (page - 1) * limit;
+
+  const searchQuery = search
+    ? {
+        $or: [
+          { firstName: { $regex: search, $options: "i" } },
+          { lastName: { $regex: search, $options: "i" } },
+        ],
+      }
+    : {};
+
+  const result = await Groups.findById(id)
+    .populate({
+      path: "clients",
+      select:
+        "firstName lastName phoneNo address zipCode badgeNumber email volunteerRole city volunteerType",
+      match: searchQuery,
+      options: { skip, limit },
+    })
+    .exec();
+
+  const totalClients = await Groups.findById(id)
+    .populate({
+      path: "clients",
+      match: searchQuery,
+    })
+    .exec();
+
+  const total = totalClients?.clients.length || 0;
+  const totalPages = Math.ceil(total / limit);
+  // @ts-ignore
+  return { result, total: totalPages, page, limit };
 };
 
 // Delete volunteer group

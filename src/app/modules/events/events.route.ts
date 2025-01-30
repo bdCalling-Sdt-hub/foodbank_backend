@@ -45,8 +45,6 @@ router
     // AuthProvider.Auth(ENUM_USER_ROLE.SUPER_ADMIN, ENUM_USER_ROLE.ADMIN),
     EventController.cancelRequest
   )
-
-
   .patch(
     "/add-groups",
     // AuthProvider.Auth(ENUM_USER_ROLE.SUPER_ADMIN, ENUM_USER_ROLE.ADMIN),

@@ -22,8 +22,6 @@ const CreateClientGroupController = CatchAsync(
     });
   }
 );
-
-// get all client group
 const GetAllClientGroupController = CatchAsync(
   async (req: Request, res: Response) => {
     const filters = pick(req.query, [
@@ -32,6 +30,8 @@ const GetAllClientGroupController = CatchAsync(
       "volunteerType",
     ]);
 
+
+    console.log("==", req.query)
     const paginationOptions = pick(req.query, paginationFields);
     const types = req.query.types;
     const result = await ClientGroupService.GetAllClientGroupService(
@@ -50,13 +50,16 @@ const GetAllClientGroupController = CatchAsync(
     });
   }
 );
-
 // get single client group
 const GetSingleClientGroupController = CatchAsync(
   async (req: Request, res: Response) => {
     const { id } = req.params;
+    const { searchTerm: search, page, limit } = req.query as any;
 
-    const result = await ClientGroupService.GetSingleClientGroupService(id);
+
+    console.log(`GetSingleClientGroupController`, req.query);
+
+    const result = await ClientGroupService.GetSingleClientGroupService(id, search, page, limit);
 
     SendResponse<Partial<IGroups> | null>(res, {
       statusCode: httpStatus.OK,

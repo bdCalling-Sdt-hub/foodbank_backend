@@ -24,8 +24,6 @@ const GetAllClientService = async (
 
   const andConditions = [];
 
-  console.log(filters);
-
   // Add status filter
   andConditions.push({ status: "client" });
 
@@ -89,11 +87,10 @@ const GetSingleTransportClientService = async (id: string) => {
   if (!filterClient) {
     throw new ApiError(httpStatus.NOT_FOUND, "Client does not exists!");
   }
+
   const events = await Events.find({
     client: { $elemMatch: { userId: id } },
   }).select("eventName eventType endOfEvent dayOfEvent endOfEvent location")
-
-  // console.log('=============================', events);
 
 
   return { filterClient, events };
