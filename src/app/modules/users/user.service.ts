@@ -220,27 +220,37 @@ const SuperAdminUserService = async (req: Request): Promise<IUser | null> => {
   return user;
 };
 
-// Update user service
+// Update user service (Role update only)
 const UpdateUserRoleService = async (
   req: Request
 ): Promise<Partial<IUser> | null> => {
   const { id } = req.params;
-  const payload = req.body;
+  const { role } = req.body; // Directly extract role from the body
 
   if (!id) {
     throw new ApiError(httpStatus.BAD_REQUEST, "User ID is required!");
   }
 
-  const isSuperAdminExist = await UserTable.findById(id);
+  if (!role) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      "Role is required in the request body!"
+    );
+  }
+
+  let isSuperAdminExist;
   let updatedUser;
+
+  if (role === ENUM_USER_ROLE.SUPER_ADMIN) {
+    isSuperAdminExist = await UserTable.findOne({ role: role });
+  }
 
   if (isSuperAdminExist) {
     throw new ApiError(httpStatus.FORBIDDEN, "Super admin already exist!");
   } else {
-    // Update the user and return the updated document
     updatedUser = await UserTable.findByIdAndUpdate(
       id,
-      { $set: payload },
+      { role: role }, // Update only the role field
       { new: true, runValidators: true }
     );
   }
