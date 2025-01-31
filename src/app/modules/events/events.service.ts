@@ -183,6 +183,7 @@ const deleteEvent = async (req: Request) => {
   const { eventId } = req.params;
   try {
     const deletedEvent = await Events.findByIdAndDelete(eventId);
+    console.log("eventId", eventId)
     if (!deletedEvent) {
       throw new ApiError(httpStatus.NOT_FOUND, "Event not found");
     }

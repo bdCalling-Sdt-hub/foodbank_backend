@@ -35,64 +35,51 @@ const GetAllClientGroupService = async (
 ): Promise<IGenResponse<IGroups[]>> => {
   const { searchTerm, ...searchTermData } = filters;
 
-  console.log("Filters:", filters);
+  console.log('=====================', filters)
+
 
   const andConditions = [];
   if (searchTerm) {
     andConditions.push({
-      $or: [{ groupName: { $regex: searchTerm, $options: "i" } }],
+      $or: ["groupName"].map((field) => ({
+        [field]: {
+          $regex: searchTerm,
+          $options: "i",
+        },
+      })),
     });
   }
 
   if (Object.keys(searchTermData).length) {
     andConditions.push({
-      $and: Object.entries(searchTermData).map(([field, value]) => ({
-        [field]: value,
+      $and: Object.entries(searchTermData).map(([fields, value]) => ({
+        [fields]: value,
       })),
     });
   }
 
-  const whereConditions: any = { types };
-
-  if (andConditions.length) {
-    whereConditions.$and = andConditions;
-  }
-
-  // Pagination and sorting
+  // pagination sort
   const { page, limit, skip, sortBy, sortOrder } =
     paginationHelper.paginationCalculation(paginationOptions);
 
-  const sortConditions: any = [];
+  const sortConditions: { [key: string]: SortOrder } = {};
 
   // @ts-ignore
-  if (sortOrder === "name") {
-    sortConditions.push({ $sort: { lowerGroupName: 1 } });
+  if (sortOrder === 'name') {
+    sortConditions["groupName"] = 1;
   } else if (sortBy && sortOrder) {
-    sortConditions.push({ $sort: { [sortBy]: sortOrder } });
+    sortConditions[sortBy] = sortOrder;
   }
+  const whereConditions = andConditions.length
+    ? { $and: andConditions, types }
+    : { types };
+  const result = await Groups.find(whereConditions)
+    .populate("clients")
+    .sort(sortConditions)
+    .limit(limit)
+    .skip(skip);
 
-  // MongoDB Aggregation Pipeline
-  const result = await Groups.aggregate([
-    { $match: whereConditions },
-    {
-      $addFields: {
-        lowerGroupName: { $toLower: "$groupName" }, // ✅ Convert to lowercase for sorting
-      },
-    },
-    ...sortConditions,
-    { $skip: skip },
-    { $limit: limit },
-    {
-      $lookup: {
-        from: "clients", // Ensure this matches your clients collection
-        localField: "clients",
-        foreignField: "_id",
-        as: "clients",
-      },
-    },
-  ]);
-
-  const total = await Groups.countDocuments(whereConditions);
+  const total = await Groups.countDocuments({ types });
 
   return {
     meta: {
@@ -103,7 +90,6 @@ const GetAllClientGroupService = async (
     data: result,
   };
 };
-
 
 const GetAllClientGroupModifyService = async (
   filters: IClientGroupFilters,

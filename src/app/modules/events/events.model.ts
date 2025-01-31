@@ -42,11 +42,6 @@ const EventSchema = new Schema<IEvents>({
   },
   eventType: {
     type: String,
-    enum: {
-      values: ["wed", "birthday"],
-      message: "{VALUE} is not a valid event type",
-    },
-    required: [true, "Event type is required"],
   },
   location: {
     type: String,
