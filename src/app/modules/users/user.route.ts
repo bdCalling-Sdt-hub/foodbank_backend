@@ -7,7 +7,7 @@ const router = express.Router();
 
 router.post(
   "/create-user",
-  AuthProvider.Auth(ENUM_USER_ROLE.SUPER_ADMIN, ENUM_USER_ROLE.ADMIN),
+  // AuthProvider.Auth(ENUM_USER_ROLE.SUPER_ADMIN, ENUM_USER_ROLE.ADMIN),
   FileUploads.uploads.single("file"),
   (req: Request, res: Response, next: NextFunction) => {
     return UserController.CreateUserController(req, res, next);
