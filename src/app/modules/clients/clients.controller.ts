@@ -31,6 +31,22 @@ const GetAllClientsController = CatchAsync(
   }
 );
 
+const GetAllClientsModifyController = CatchAsync(
+  async (req: Request, res: Response) => {
+    const result = await ClientService.GetAllClientsModify();
+
+    SendResponse<Partial<ITransportVolunteer[]>>(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Clients get success",
+      data: result
+    });
+  }
+);
+
+
+
+
 // Get single client
 const GetSingleClientController = CatchAsync(
   async (req: Request, res: Response) => {
@@ -85,4 +101,5 @@ export const ClientController = {
   GetSingleClientController,
   UpdateSingleClientController,
   DeleteSingleClientController,
+  GetAllClientsModifyController
 };

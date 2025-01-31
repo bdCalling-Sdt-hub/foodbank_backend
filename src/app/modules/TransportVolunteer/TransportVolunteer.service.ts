@@ -53,7 +53,10 @@ const GetAllTransportVolunteerService = async (
 
   const sortConditions: { [key: string]: SortOrder } = {};
 
-  if (sortBy && sortOrder) {
+  // @ts-ignore
+  if (sortOrder === 'name') {
+    sortConditions["firstName"] = 1;
+  } else if (sortBy && sortOrder) {
     sortConditions[sortBy] = sortOrder;
   }
   const whereConditions = andConditions.length ? { $and: andConditions } : {};
@@ -64,8 +67,6 @@ const GetAllTransportVolunteerService = async (
     .skip(skip);
 
   const total = await TransportVolunteerTable.countDocuments();
-
-  console.log("==========", result, page, total)
 
   return {
     meta: {

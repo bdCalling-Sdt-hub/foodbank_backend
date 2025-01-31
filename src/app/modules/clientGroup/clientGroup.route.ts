@@ -15,6 +15,14 @@ router.get(
   // AuthProvider.Auth(ENUM_USER_ROLE.SUPER_ADMIN, ENUM_USER_ROLE.ADMIN),
   ClientController.GetAllClientGroupController
 );
+
+router.get(
+  "/all",
+  // AuthProvider.Auth(ENUM_USER_ROLE.SUPER_ADMIN, ENUM_USER_ROLE.ADMIN),
+  ClientController.GetAllClientGroupModify
+);
+
+
 router.get(
   "/driver-client",
   // AuthProvider.Auth(ENUM_USER_ROLE.SUPER_ADMIN, ENUM_USER_ROLE.ADMIN),

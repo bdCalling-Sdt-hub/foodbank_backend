@@ -262,9 +262,9 @@ const addClients = async (req: Request) => {
       html: sendUserRequestBody({
         email,
         name: `${userDb.firstName} ${userDb.lastName}`,
-        url: `http://${Config.base_url}:${Config.port}/api/v1/events/accept-request/${eventId}/${userId}/${type}`,
-        frontend_url: `https://backend.volunhelp.com/accept-request/event/${eventId}/user/${userId}/type/${type}`,
-        cancel_url: `https://backend.volunhelp.com/cancel-request/event/${eventId}/user/${userId}/type/${type}`,
+        url: `https://backend.volunhelp.com/api/v1/events/accept-request/${eventId}/${userId}/${type}`,
+        frontend_url: `https://volunhelp.com/accept-request/event/${eventId}/user/${userId}/type/${type}`,
+        cancel_url: `https://volunhelp.com/cancel-request/event/${eventId}/user/${userId}/type/${type}`,
         type: typeOfUser,
         event_name: eventDb.eventName,
         event_type: eventDb.eventType,

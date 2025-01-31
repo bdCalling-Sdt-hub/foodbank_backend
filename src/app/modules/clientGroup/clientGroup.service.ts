@@ -11,14 +11,101 @@ import { TransportVolunteerTable } from "../TransportVolunteer/TransportVoluntee
 
 // client group service
 const CreateClientGroupService = async (payload: IGroups): Promise<IGroups> => {
-  // console.log(payload);
-  const meetings = await Groups.create(payload);
+  const { clients } = payload;
 
+  const meetings = await Groups.create(payload);
+  if (!meetings) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Failed to create client group");
+  }
+  const meetingId = meetings._id
+
+
+  await TransportVolunteerTable.updateMany(
+    { _id: { $in: clients } },
+    { $push: { meetings: meetingId } }
+  );
   return meetings;
 };
 
 // client group service
 const GetAllClientGroupService = async (
+  filters: IClientGroupFilters,
+  paginationOptions: IPaginationOptions,
+  types: string,
+): Promise<IGenResponse<IGroups[]>> => {
+  const { searchTerm, ...searchTermData } = filters;
+
+  console.log("Filters:", filters);
+
+  const andConditions = [];
+  if (searchTerm) {
+    andConditions.push({
+      $or: [{ groupName: { $regex: searchTerm, $options: "i" } }],
+    });
+  }
+
+  if (Object.keys(searchTermData).length) {
+    andConditions.push({
+      $and: Object.entries(searchTermData).map(([field, value]) => ({
+        [field]: value,
+      })),
+    });
+  }
+
+  const whereConditions: any = { types };
+
+  if (andConditions.length) {
+    whereConditions.$and = andConditions;
+  }
+
+  // Pagination and sorting
+  const { page, limit, skip, sortBy, sortOrder } =
+    paginationHelper.paginationCalculation(paginationOptions);
+
+  const sortConditions: any = [];
+
+  // @ts-ignore
+  if (sortOrder === "name") {
+    sortConditions.push({ $sort: { lowerGroupName: 1 } });
+  } else if (sortBy && sortOrder) {
+    sortConditions.push({ $sort: { [sortBy]: sortOrder } });
+  }
+
+  // MongoDB Aggregation Pipeline
+  const result = await Groups.aggregate([
+    { $match: whereConditions },
+    {
+      $addFields: {
+        lowerGroupName: { $toLower: "$groupName" }, // ✅ Convert to lowercase for sorting
+      },
+    },
+    ...sortConditions,
+    { $skip: skip },
+    { $limit: limit },
+    {
+      $lookup: {
+        from: "clients", // Ensure this matches your clients collection
+        localField: "clients",
+        foreignField: "_id",
+        as: "clients",
+      },
+    },
+  ]);
+
+  const total = await Groups.countDocuments(whereConditions);
+
+  return {
+    meta: {
+      page,
+      limit,
+      total,
+    },
+    data: result,
+  };
+};
+
+
+const GetAllClientGroupModifyService = async (
   filters: IClientGroupFilters,
   paginationOptions: IPaginationOptions,
   types: string,
@@ -54,7 +141,11 @@ const GetAllClientGroupService = async (
 
   const sortConditions: { [key: string]: SortOrder } = {};
 
-  if (sortBy && sortOrder) {
+  // @ts-ignore
+  if (sortOrder === 'name') {
+    console.log("=========", sortOrder)
+    sortConditions["groupName"] = 1;
+  } else if (sortBy && sortOrder) {
     sortConditions[sortBy] = sortOrder;
   }
   const whereConditions = andConditions.length
@@ -63,14 +154,8 @@ const GetAllClientGroupService = async (
   const result = await Groups.find(whereConditions)
     .populate("clients")
     .sort(sortConditions)
-    .limit(limit)
-    .skip(skip);
 
   const total = await Groups.countDocuments({ types });
-
-  console.log("==================", page,
-    limit,
-    total,)
 
   return {
     meta: {
@@ -81,6 +166,7 @@ const GetAllClientGroupService = async (
     data: result,
   };
 };
+
 
 const DriverClientGroupService = async (
   filters: IClientGroupFilters,
@@ -154,12 +240,7 @@ const DriverClientGroupsModifyService = async (
 
   if (searchTerm) {
     andConditions.push({
-      $or: ["groupName"].map((field) => ({
-        [field]: {
-          $regex: searchTerm,
-          $options: "i",
-        },
-      })),
+      $or: [{ groupName: { $regex: searchTerm, $options: "i" } }],
     });
   }
 
@@ -179,8 +260,6 @@ const DriverClientGroupsModifyService = async (
     whereConditions.types = volunteerType;
   }
 
-  console.log("whereConditions.volunteerType ", whereConditions.volunteerType);
-
   if (andConditions.length) {
     whereConditions.$and = andConditions;
   }
@@ -189,18 +268,34 @@ const DriverClientGroupsModifyService = async (
   const { page, limit, skip, sortBy = "createdAt", sortOrder = "desc" } =
     paginationHelper.paginationCalculation(paginationOptions);
 
-  const sortConditions: { [key: string]: SortOrder } = {
-    [sortBy]: sortOrder === "asc" ? 1 : -1,
-  };
+  const sortConditions: any = [];
+  // @ts-ignore
+  if (sortOrder === "name") {
+    sortConditions.push({ $sort: { lowerGroupName: 1 } });
+  } else {
+    sortConditions.push({ $sort: { [sortBy]: sortOrder === "asc" ? 1 : -1 } });
+  }
 
-  console.log("Sorting by:", sortConditions);
-
-  // Fetch results
-  const result = await Groups.find(whereConditions)
-    .populate("clients")
-    .sort(sortConditions)
-    .limit(limit)
-    .skip(skip);
+  // MongoDB Aggregation Pipeline
+  const result = await Groups.aggregate([
+    { $match: whereConditions },
+    {
+      $addFields: {
+        lowerGroupName: { $toLower: "$groupName" }, // Convert to lowercase
+      },
+    },
+    ...sortConditions,
+    { $skip: skip },
+    { $limit: Number(limit) },
+    {
+      $lookup: {
+        from: "clients", // Ensure this matches your clients collection name
+        localField: "clients",
+        foreignField: "_id",
+        as: "clients",
+      },
+    },
+  ]);
 
   const total = await Groups.countDocuments(whereConditions);
 
@@ -213,6 +308,7 @@ const DriverClientGroupsModifyService = async (
     data: result,
   };
 };
+
 
 
 //single client group service
@@ -290,14 +386,40 @@ const UpdateClientGroupService = async (
     throw new ApiError(httpStatus.NOT_FOUND, "Group does not exist!");
   }
 
-  const result = await Groups.findByIdAndUpdate(
+  // Extract the previous and new clients
+  const previousClients = isExist.clients.map((client: any) => client._id.toString());
+  const newClients = payload.clients ? payload.clients.map((client: any) => client.toString()) : [];
+
+  // Find clients to be removed and added
+  const clientsToRemove = previousClients.filter(client => !newClients.includes(client));
+  const clientsToAdd = newClients.filter(client => !previousClients.includes(client));
+
+  // Update the Group first
+  const updatedGroup = await Groups.findByIdAndUpdate(
     id,
     { $set: payload },
     { new: true, runValidators: true }
   ).populate("clients");
 
-  return result;
+  // Remove this meeting ID from old clients
+  if (clientsToRemove.length > 0) {
+    await TransportVolunteerTable.updateMany(
+      { _id: { $in: clientsToRemove } },
+      { $pull: { meetings: id } }
+    );
+  }
+
+  // Add this meeting ID to new clients
+  if (clientsToAdd.length > 0) {
+    await TransportVolunteerTable.updateMany(
+      { _id: { $in: clientsToAdd } },
+      { $push: { meetings: id } }
+    );
+  }
+
+  return updatedGroup;
 };
+
 
 // delete client group service
 const DeleteClientGroupService = async (
@@ -329,5 +451,6 @@ export const ClientGroupService = {
   GetSingleClientGroupService,
   DeleteClientGroupService,
   DriverClientGroupService,
-  DriverClientGroupsModifyService
+  DriverClientGroupsModifyService,
+  GetAllClientGroupModifyService
 };

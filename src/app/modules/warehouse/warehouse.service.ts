@@ -47,7 +47,10 @@ const GetAllWarehouseService = async (
 
   const sortConditions: { [key: string]: SortOrder } = {};
 
-  if (sortBy && sortOrder) {
+  // @ts-ignore
+  if (sortOrder === 'name') {
+    sortConditions["firstName"] = 1;
+  } else if (sortBy && sortOrder) {
     sortConditions[sortBy] = sortOrder;
   }
 

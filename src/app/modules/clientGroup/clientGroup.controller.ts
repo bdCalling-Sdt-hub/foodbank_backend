@@ -52,6 +52,39 @@ const GetAllClientGroupController = CatchAsync(
     });
   }
 );
+
+const GetAllClientGroupModify = CatchAsync(
+  async (req: Request, res: Response) => {
+    const filters = pick(req.query, [
+      "searchTerm",
+      "volunteerGroupName",
+      "volunteerType",
+      'page',
+      "limit"
+    ]);
+
+
+    console.log("==", req.query)
+    const paginationOptions = pick(req.query, paginationFields);
+    const types = req.query.types;
+    const result = await ClientGroupService.GetAllClientGroupModifyService(
+      // @ts-ignore
+      filters,
+      paginationOptions,
+      // @ts-ignore
+      types
+    );
+
+    SendResponse<IGroups[] | null>(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Client group get success!",
+      meta: result.meta,
+      data: result.data,
+    });
+  }
+);
+
 // get single client group
 const GetSingleClientGroupController = CatchAsync(
   async (req: Request, res: Response) => {
@@ -168,5 +201,6 @@ export const ClientController = {
   GetSingleClientGroupController,
   DeleteSingleClientGroupController,
   DriverClientGroupController,
-  DriverClientGroupsModifyController
+  DriverClientGroupsModifyController,
+  GetAllClientGroupModify
 };

@@ -28,4 +28,5 @@ export const KeyOfFilterForFiltersKey = [
   "zipCode",
   "dietaryRestrictions",
   "status",
+  "name"
 ];

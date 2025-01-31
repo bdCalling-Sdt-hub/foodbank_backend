@@ -19,14 +19,14 @@ const GetAllClientService = async (
 ): Promise<IGenResponse<ITransportVolunteer[]>> => {
   // @ts-ignore
   filters.holocaustSurvivor === "" && delete filters.holocaustSurvivor;
-
+  // @ts-ignore
   const { searchTerm, status, ...searchTermData } = filters;
 
   const andConditions = [];
 
-  // Add status filter
   andConditions.push({ status: "client" });
 
+  // Search filter
   if (searchTerm) {
     andConditions.push({
       $or: KeyOfFilterForClientSearchTerm.map((field) => ({
@@ -46,16 +46,19 @@ const GetAllClientService = async (
     });
   }
 
-  // pagination sort
   const { page, limit, skip, sortBy, sortOrder } =
     paginationHelper.paginationCalculation(paginationOptions);
 
   const sortConditions: { [key: string]: SortOrder } = {};
 
-  if (sortBy && sortOrder) {
+  // @ts-ignore
+  if (sortOrder === 'name') {
+    sortConditions["firstName"] = 1;
+  } else if (sortBy && sortOrder) {
     sortConditions[sortBy] = sortOrder;
   }
 
+  // Query clients with sorting
   const whereConditions = andConditions.length ? { $and: andConditions } : {};
   const result = await TransportVolunteerTable.find(whereConditions)
     .populate("meetings")
@@ -65,7 +68,7 @@ const GetAllClientService = async (
 
   // Get total count of clients
   const total = await TransportVolunteerTable.countDocuments({
-    status: "driver",
+    status: "client",
   });
 
   return {
@@ -77,6 +80,14 @@ const GetAllClientService = async (
     data: result,
   };
 };
+
+
+const GetAllClientsModify = async () => {
+  const result = await TransportVolunteerTable.find({ status: "client" })
+  return result
+};
+
+
 
 // single client get
 const GetSingleTransportClientService = async (id: string) => {
@@ -153,4 +164,5 @@ export const ClientService = {
   GetSingleTransportClientService,
   UpdateSingleClientService,
   DeleteSingleClientService,
+  GetAllClientsModify
 };
