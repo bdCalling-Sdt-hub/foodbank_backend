@@ -6,6 +6,8 @@ interface IUserObj {
   userId: Schema.Types.ObjectId;
   email: string;
   accept: boolean;
+  assigned: boolean;
+  assignedUId: Schema.Types.ObjectId
 }
 
 interface IGroup {
@@ -21,6 +23,11 @@ const UserObjSchema = new Schema<IUserObj>({
   },
   email: { type: String, required: true },
   accept: { type: Boolean, default: false },
+  assigned: { type: Boolean, default: false },
+  assignedUId: {
+    type: Schema.Types.ObjectId,
+    ref: "TransportVolunteers",
+  },
 });
 
 const groupObject = new Schema<IGroup>({

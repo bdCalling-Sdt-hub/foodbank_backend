@@ -725,6 +725,20 @@ const getEventDrivers = async (req: Request) => {
   }
 };
 
+const assignedClients = async (req: Request) => {
+  try {
+    const { eventId, clientId, volunteerId } = req.query;
+    if (!eventId || !clientId || !volunteerId) {
+      throw new ApiError(httpStatus.BAD_REQUEST, "Missing required parameters");
+    }
+    // ===============
+    // Work Progressing
+    // ===============
+
+  } catch (error) {
+
+  }
+};
 
 export const EventService = {
   createEvent,
@@ -739,5 +753,6 @@ export const EventService = {
   getEventsGroups,
   getEventDrivers,
   acceptRequest,
-  cancelRequest
+  cancelRequest,
+  assignedClients
 };

@@ -70,6 +70,12 @@ router
     // AuthProvider.Auth(ENUM_USER_ROLE.SUPER_ADMIN, ENUM_USER_ROLE.ADMIN),
     EventController.getEventDrivers
   )
+  // =====================Processing=================
+  .patch(
+    "/assigned-clients",
+    AuthProvider.Auth(ENUM_USER_ROLE.SUPER_ADMIN, ENUM_USER_ROLE.ADMIN),
+    EventController.assignedClients
+  )
 
 
 export const EventRouters = router;

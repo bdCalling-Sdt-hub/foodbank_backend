@@ -147,6 +147,18 @@ const cancelRequest = CatchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const assignedClients = CatchAsync(async (req: Request, res: Response) => {
+  const result = await EventService.assignedClients(req as any);
+  return SendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Client assigned successfully!",
+    data: result,
+  });
+});
+
+
+
 
 
 
@@ -163,5 +175,6 @@ export const EventController = {
   getEventsGroups,
   getEventDrivers,
   acceptRequest,
-  cancelRequest
+  cancelRequest,
+  assignedClients
 };
