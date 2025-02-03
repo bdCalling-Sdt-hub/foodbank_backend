@@ -3,6 +3,8 @@ import httpStatus from "http-status";
 import CatchAsync from "../../../shared/CatchAsync";
 import SendResponse from "../../../shared/SendResponse";
 import { EventService } from "./events.service";
+import { TransportVolunteerTable } from "../TransportVolunteer/TransportVolunteer.model";
+import ApiError from "../../../error/APIsError";
 
 const createEventsDb = CatchAsync(async (req: Request, res: Response) => {
   const payload = req.body;
@@ -157,6 +159,22 @@ const assignedClients = CatchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const volunteerDetails = CatchAsync(async (req: Request, res: Response) => {
+  const id = req.params.id;
+
+  console.log(id);
+  if (!id) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "ID is required");
+  }
+  const result = await TransportVolunteerTable.findById(id)
+  return SendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "get successfully!",
+    data: result,
+  });
+});
+
 
 
 
@@ -176,5 +194,6 @@ export const EventController = {
   getEventDrivers,
   acceptRequest,
   cancelRequest,
-  assignedClients
+  assignedClients,
+  volunteerDetails
 };

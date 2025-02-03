@@ -38,7 +38,10 @@ process.on("unhandledRejection", (error) => {
 process.on("SIGTERM", () => {
   console.info("SIGTERM is received!");
   if (server) {
-    server.close();
+    server.close(() => {
+      console.error('Server closed');
+      process.exit(0);
+    });
   }
 });
 

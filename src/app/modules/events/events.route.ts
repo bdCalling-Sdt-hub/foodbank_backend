@@ -77,5 +77,11 @@ router
     EventController.assignedClients
   )
 
+  .get(
+    "/volunteer-details/:id",
+    AuthProvider.Auth(ENUM_USER_ROLE.SUPER_ADMIN, ENUM_USER_ROLE.ADMIN),
+    EventController.volunteerDetails
+  )
+
 
 export const EventRouters = router;

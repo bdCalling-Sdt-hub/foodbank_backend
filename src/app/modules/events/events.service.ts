@@ -38,7 +38,14 @@ const getEvent = async (req: Request) => {
         path: "client",
         populate: {
           path: "userId",
-          select: "firstName lastName holocaustSurvivor phoneNo",
+          // select: "firstName lastName holocaustSurvivor phoneNo",
+        },
+      })
+      .populate({
+        path: "client",
+        populate: {
+          path: "assignedUId",
+          // select: "firstName lastName holocaustSurvivor phoneNo",
         },
       })
       .populate({
@@ -725,18 +732,38 @@ const getEventDrivers = async (req: Request) => {
   }
 };
 
+
 const assignedClients = async (req: Request) => {
   try {
     const { eventId, clientId, volunteerId } = req.query;
+
     if (!eventId || !clientId || !volunteerId) {
       throw new ApiError(httpStatus.BAD_REQUEST, "Missing required parameters");
     }
-    // ===============
-    // Work Progressing
-    // ===============
 
-  } catch (error) {
+    const event = await Events.findById(eventId);
+    if (!event) {
+      throw new ApiError(httpStatus.NOT_FOUND, "Event not found");
+    }
 
+    const client = event.client.find((c) => c.userId.toString() === clientId) as any;
+
+    if (!client) {
+      throw new ApiError(httpStatus.NOT_FOUND, "Client not found in event");
+    }
+
+    if (client.assignedUId?.toString() === volunteerId) {
+      client.assignedUId = null;
+      client.assigned = false;
+    } else {
+      client.assignedUId = volunteerId;
+      client.assigned = true;
+    }
+    await event.save();
+
+    return event
+  } catch (error: any) {
+    throw new ApiError(error.statusCode || httpStatus.INTERNAL_SERVER_ERROR, error.message || "An error occurred")
   }
 };
 

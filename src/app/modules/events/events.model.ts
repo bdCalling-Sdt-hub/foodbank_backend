@@ -27,6 +27,7 @@ const UserObjSchema = new Schema<IUserObj>({
   assignedUId: {
     type: Schema.Types.ObjectId,
     ref: "TransportVolunteers",
+    default: null,
   },
 });
 
