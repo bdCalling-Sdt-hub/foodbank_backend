@@ -68,10 +68,7 @@ const GetAllTransportVolunteerService = async (
     sortConditions["firstName"] = 1;
     // @ts-ignore
   } else if (sortOrder === "vip") {
-    if (sortOrder === "vip") {
-      // @ts-ignore
-      andConditions.push({ volunteerType: { $eq: true } },);
-    }
+    sortConditions["volunteerType"] = -1;
 
   } else if (sortBy && sortOrder) {
     sortConditions[sortBy] = sortOrder;
