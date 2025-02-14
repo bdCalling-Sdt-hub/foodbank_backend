@@ -27,9 +27,16 @@ const GetAllTransportVolunteerService = async (
 ): Promise<IGenResponse<ITransportVolunteer[]>> => {
   const { searchTerm, ...searchTermData } = filters;
 
-  const andConditions = [];
+  const andConditions = [
+    {
+      status: { $in: ["driver", "warehouse"] },
+    },
+  ];
+
+
   if (searchTerm) {
     andConditions.push({
+      // @ts-ignore
       $or: TransportVolunteerSearchTermsFields.map((field) => ({
         [field]: {
           $regex: searchTerm,
@@ -41,6 +48,7 @@ const GetAllTransportVolunteerService = async (
 
   if (Object.keys(searchTermData).length) {
     andConditions.push({
+      // @ts-ignore
       $and: Object.entries(searchTermData).map(([fields, value]) => ({
         [fields]: value,
       })),
@@ -60,6 +68,7 @@ const GetAllTransportVolunteerService = async (
     sortConditions[sortBy] = sortOrder;
   }
   const whereConditions = andConditions.length ? { $and: andConditions } : {};
+
   const result = await TransportVolunteerTable.find(whereConditions)
     .populate("meetings")
     .sort(sortConditions)
