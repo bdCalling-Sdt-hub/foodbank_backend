@@ -50,6 +50,10 @@ const GetAllDriverService = async (
   // @ts-ignore
   if (sortOrder === 'name') {
     sortConditions["firstName"] = 1;
+    // @ts-ignore
+  } else if (sortOrder === "vip") {
+    sortConditions["volunteerType"] = -1;
+
   } else if (sortBy && sortOrder) {
     sortConditions[sortBy] = sortOrder;
   }
