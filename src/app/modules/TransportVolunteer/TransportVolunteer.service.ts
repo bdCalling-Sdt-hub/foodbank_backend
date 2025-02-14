@@ -33,7 +33,6 @@ const GetAllTransportVolunteerService = async (
     },
   ];
 
-
   if (searchTerm) {
     andConditions.push({
       // @ts-ignore
@@ -60,6 +59,14 @@ const GetAllTransportVolunteerService = async (
     paginationHelper.paginationCalculation(paginationOptions);
 
   const sortConditions: { [key: string]: SortOrder } = {};
+
+  // @ts-ignore
+  if (sortOrder === "vip") {
+    andConditions.push({
+      // @ts-ignore
+      volunteerType: { $eq: true },
+    });
+  }
 
   // @ts-ignore
   if (sortOrder === 'name') {
