@@ -60,6 +60,7 @@ const GetAllTransportVolunteerService = async (
 
   const sortConditions: { [key: string]: SortOrder } = {};
 
+  console.log("sortOrder", sortOrder)
   // @ts-ignore
   if (sortOrder === "vip") {
     andConditions.push({
