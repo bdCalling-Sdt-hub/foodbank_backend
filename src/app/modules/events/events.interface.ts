@@ -37,7 +37,7 @@ type ISendMailEvent = {
   event_name: string;
   event_type: string;
   event_location: string;
-  event_day_of_event: Date;
+  event_day_of_event: string | Date;
   event_start_of_event: string;
   event_end_of_event: string;
 }

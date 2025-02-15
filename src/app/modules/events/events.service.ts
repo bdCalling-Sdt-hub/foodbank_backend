@@ -8,6 +8,7 @@ import { sendUserRequestBody } from "../../../mail/sendUserRequestBody";
 import { Groups } from "../groups/groups.model";
 import { TransportVolunteerTable } from "../TransportVolunteer/TransportVolunteer.model";
 import Events from "./events.model";
+import { format } from "date-fns";
 
 const createEvent = async (payload: IEvents): Promise<IEvents | null> => {
   console.log("console from service page", payload);
@@ -263,6 +264,11 @@ const addClients = async (req: Request) => {
     { new: true, runValidators: true }
   );
   if (type !== "client") {
+    const formattedDate = new Date(eventDb.dayOfEvent).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric"
+    });
     // Send email request
     const emailRes = await sendUserRequest({
       email,
@@ -277,7 +283,7 @@ const addClients = async (req: Request) => {
         event_name: eventDb.eventName,
         event_type: eventDb.eventType,
         event_location: eventDb.location,
-        event_day_of_event: eventDb.dayOfEvent,
+        event_day_of_event: format(new Date(eventDb.dayOfEvent), "MMMM d, yyyy"),
         event_start_of_event: eventDb.startOfEvent,
         event_end_of_event: eventDb.endOfEvent,
       }),
