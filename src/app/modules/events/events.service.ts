@@ -1,6 +1,6 @@
 import { Request } from "express";
 import httpStatus from "http-status";
-import mongoose from "mongoose";
+import mongoose, { Types } from "mongoose";
 import Config from "../../../config/Config";
 import ApiError from "../../../error/APIsError";
 import sendUserRequest from "../../../mail/sendUserRequest";
@@ -264,11 +264,9 @@ const addClients = async (req: Request) => {
     { new: true, runValidators: true }
   );
   if (type !== "client") {
-    const formattedDate = new Date(eventDb.dayOfEvent).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric"
-    });
+
+    console.log("eventDb", eventDb)
+
     // Send email request
     const emailRes = await sendUserRequest({
       email,
@@ -281,7 +279,8 @@ const addClients = async (req: Request) => {
         cancel_url: `https://volunhelp.com/cancel-request/event/${eventId}/user/${userId}/type/${type}`,
         type: typeOfUser,
         event_name: eventDb.eventName,
-        event_type: eventDb.eventType,
+        message: type === "driver" ? eventDb.messageDeliveryDriver : eventDb.messageWarehouseVolunteer,
+        event_type: eventDb.eventType.replace(/([a-z])([A-Z])/g, '$1 $2'),
         event_location: eventDb.location,
         event_day_of_event: format(new Date(eventDb.dayOfEvent), "MMMM d, yyyy"),
         event_start_of_event: eventDb.startOfEvent,
@@ -446,7 +445,7 @@ const addGroupUpdate = async (payload: {
       );
     }
 
-    const groups = await Groups.findById(groupId);
+    const groups = await Groups.findById(groupId).populate({ path: "clients", select: "status email _id" });
     if (!groups) {
       throw new ApiError(httpStatus.NOT_FOUND, "Group not found");
     }
@@ -474,11 +473,108 @@ const addGroupUpdate = async (payload: {
       { new: true, runValidators: true }
     );
 
+    const clients = groups?.clients
+
+    if (clients?.length) {
+      for (const client of clients) {
+        // @ts-ignore
+        addToClientsGroups({ email: client.email, userId: client._id, type: types, eventId })
+      }
+    }
+
+
+
     return { message: "Group update added successfully", result };
   } catch (error: any) {
     console.error("Failed to add group update:", error);
     throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message);
   }
+};
+
+const addToClientsGroups = async ({ email, userId, type, eventId }: {
+  email: string;
+  eventId: Types.ObjectId;
+  type: string;
+  userId: Types.ObjectId;
+}) => {
+
+  console.log("Group update added successfully", email, userId, type, eventId)
+
+  const eventDb = (await Events.findById(eventId)) as IEvents;
+  if (!eventDb) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Event not found");
+  }
+
+  const typeOfUser =
+    type === "client"
+      ? "Client"
+      : type === "warehouse"
+        ? "Warehouse Volunteers"
+        : "Driver Volunteers";
+  let existingClient;
+  if (type === "client") {
+    existingClient = eventDb.client.find((client) => client.email === email);
+  } else if (type === "warehouse") {
+    existingClient = eventDb.warehouse.find(
+      (warehouse) => warehouse.email === email
+    );
+  } else if (type === "driver") {
+    existingClient = eventDb.driver.find((driver) => driver.email === email);
+  } else {
+    return;
+  }
+
+  if (existingClient) {
+    return;
+  }
+
+  const userDb = await TransportVolunteerTable.findById(userId);
+  if (!userDb) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Client not found.");
+  }
+
+  const validTypes = ["client", "warehouse", "driver"];
+  if (!validTypes.includes(type)) {
+    return;
+  }
+
+  const updateField =
+    type === "client"
+      ? "client"
+      : type === "warehouse"
+        ? "warehouse"
+        : "driver";
+  const result = await Events.findByIdAndUpdate(
+    eventId,
+    { $push: { [updateField]: { userId, email } } },
+    { new: true, runValidators: true }
+  );
+  console.log(result);
+  if (type !== "client") {
+    // Send email request
+    const emailRes = await sendUserRequest({
+      email,
+      subject: "Events Request",
+      html: sendUserRequestBody({
+        email,
+        name: `${userDb.firstName} ${userDb.lastName}`,
+        url: `https://backend.volunhelp.com/api/v1/events/accept-request/${eventId}/${userId}/${type}`,
+        frontend_url: `https://volunhelp.com/accept-request/event/${eventId}/user/${userId}/type/${type}`,
+        cancel_url: `https://volunhelp.com/cancel-request/event/${eventId}/user/${userId}/type/${type}`,
+        type: typeOfUser,
+        message: type === "driver" ? eventDb.messageDeliveryDriver : eventDb.messageWarehouseVolunteer,
+        event_name: eventDb.eventName,
+        event_type: eventDb.eventType.replace(/([a-z])([A-Z])/g, '$1 $2'),
+        event_location: eventDb.location,
+        event_day_of_event: format(new Date(eventDb.dayOfEvent), "MMMM d, yyyy"),
+        event_start_of_event: eventDb.startOfEvent,
+        event_end_of_event: eventDb.endOfEvent,
+      }),
+    });
+
+    console.log('emailRes', email, emailRes)
+  }
+  return { message: "Client added successfully", result };
 };
 
 const removeGroupUpdate = async (payload: {
@@ -521,19 +617,67 @@ const removeGroupUpdate = async (payload: {
       { $pull: { groups: { gid: objectIdGroupId, type: types } } },
       { new: true, runValidators: true }
     );
+    const groups = await Groups.findById(groupId).populate("clients")
+
+    if (groups?.clients) {
+      for (const client of groups.clients) {
+        // @ts-ignore 
+        removeClientGroups({ email: client.email, type: types, eventId })
+      }
+    }
 
     return { message: "Group removed successfully", result };
   } catch (error: any) {
-    console.error(
-      `Failed to remove group update for eventId: ${payload.eventId
-      }, payload: ${JSON.stringify(payload)}`,
-      error.message
-    );
     throw new ApiError(
       httpStatus.INTERNAL_SERVER_ERROR,
       "Failed to remove group update"
     );
   }
+};
+
+const removeClientGroups = async ({ email, type, eventId }: {
+  email: string;
+  eventId: Types.ObjectId;
+  type: string;
+  userId: Types.ObjectId;
+}) => {
+  const eventDb = (await Events.findById(eventId)) as IEvents;
+  if (!eventDb) {
+    return;
+  }
+
+  const updateField =
+    type === "client"
+      ? "client"
+      : type === "warehouse"
+        ? "warehouse"
+        : type === "driver"
+          ? "driver"
+          : null;
+
+  if (!updateField) {
+    return
+  }
+
+  const existingClient = eventDb[updateField].find(
+    (entry) => entry.email === email
+  );
+
+  if (!existingClient) {
+    return
+  }
+
+  const result = await Events.findByIdAndUpdate(
+    eventId,
+    { $pull: { [updateField]: { email } } },
+    { new: true, runValidators: true }
+  );
+
+  return {
+    message: `${type.charAt(0).toUpperCase() + type.slice(1)
+      } removed successfully`,
+    result,
+  };
 };
 
 const getEventsGroups = async (payload: IGetGroups) => {

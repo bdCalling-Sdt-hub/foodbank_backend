@@ -37,6 +37,8 @@ export type TransportVolunteerMethods = Model<
 
 // filter user
 export type ITransportVolunteerFilters = {
+
+  type: string
   searchTerm?: string;
   firstName: string;
   lastName: string;

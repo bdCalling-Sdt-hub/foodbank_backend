@@ -200,12 +200,20 @@ const GetAllDriverWarehouseTransportVolunteerService = async (
   filters: ITransportVolunteerFilters,
   paginationOptions: IPaginationOptions
 ): Promise<IGenResponse<ITransportVolunteer[]>> => {
-  const { searchTerm, ...searchTermData } = filters;
+  const { searchTerm, type, ...searchTermData } = filters;
+
+  console.log("type==========", type)
 
   const andConditions: any[] = [];
 
-  // Add status filter for driver or warehouse
-  andConditions.push({ status: { $in: ["driver", "warehouse"] } });
+  if (type === 'driver') {
+    andConditions.push({ status: { $in: ["driver"] } });
+  } else if (type === 'warehouse') {
+    andConditions.push({ status: { $in: ["warehouse"] } });
+  } else {
+    andConditions.push({ status: { $in: ["driver", "warehouse"] } });
+  }
+
 
   // Add searchTerm filter for relevant fields
   if (searchTerm) {

@@ -97,6 +97,8 @@ export const sendUserRequestBody = (data: ISendMailEvent) => `
         <a href="${data.frontend_url}" class="button">Accept Request</a>
         <a href="${data.cancel_url}" class="button cancel">Cancel Request</a>
 
+        <p>${data.message}</p>
+
         <p>If you have any questions, feel free to contact us.</p>
 
         <p>Best Regards,<br>The Events Team</p>

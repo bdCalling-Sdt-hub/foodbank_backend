@@ -1,4 +1,5 @@
 export const paginationFilterableKey = [
+  "type",
   "searchTerm",
   "firstName",
   "lastName",

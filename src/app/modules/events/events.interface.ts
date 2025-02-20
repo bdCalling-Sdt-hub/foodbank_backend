@@ -40,6 +40,7 @@ type ISendMailEvent = {
   event_day_of_event: string | Date;
   event_start_of_event: string;
   event_end_of_event: string;
+  message: string;
 }
 
 type IGroupRequest = {

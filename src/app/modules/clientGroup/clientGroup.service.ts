@@ -220,8 +220,6 @@ const DriverClientGroupsModifyService = async (
   //@ts-ignore
   const { searchTerm, volunteerType, ...searchTermData } = filters;
 
-  console.log("Filters:", volunteerType);
-
   const andConditions = [];
 
   if (searchTerm) {
@@ -275,14 +273,13 @@ const DriverClientGroupsModifyService = async (
     { $limit: Number(limit) },
     {
       $lookup: {
-        from: "clients", // Ensure this matches your clients collection name
+        from: "transportvolunteers", // ✅ Lowercased collection name
         localField: "clients",
         foreignField: "_id",
         as: "clients",
       },
-    },
-  ]);
-
+    }
+  ])
   const total = await Groups.countDocuments(whereConditions);
 
   return {

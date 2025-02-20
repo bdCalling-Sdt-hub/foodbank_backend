@@ -107,6 +107,7 @@ const DeleteSingleTransportVolunteerController = CatchAsync(
 //Get all driver and warehouse
 const GetAllDriverWarehouseTransportVolunteerController = CatchAsync(
   async (req: Request, res: Response) => {
+    console.log("Get all driver and warehouse", req.query)
     const filters = pick(req.query, paginationFilterableKey);
 
     const paginationOptions = pick(req.query, paginationFields);
