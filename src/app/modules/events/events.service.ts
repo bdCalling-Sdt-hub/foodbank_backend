@@ -9,11 +9,16 @@ import { Groups } from "../groups/groups.model";
 import { TransportVolunteerTable } from "../TransportVolunteer/TransportVolunteer.model";
 import Events from "./events.model";
 import { format } from "date-fns";
+import moment from 'moment-timezone';
 
 const createEvent = async (payload: IEvents): Promise<IEvents | null> => {
   console.log("console from service page", payload);
 
   try {
+    if (payload?.dayOfEvent) {
+      payload.dayOfEvent = moment.tz(payload.dayOfEvent, "America/New_York").toDate();
+    }
+
     const result = await Events.create(payload);
     return result;
   } catch (error) {
@@ -859,20 +864,40 @@ const getEventDrivers = async (req: Request) => {
       });
     }
 
-    // Pagination logic
+
+    const updatedDrivers = drivers.map((driver) => {
+      const assigned = event?.client?.filter((cl: any) => {
+        const assignedUId = cl?.assignedUId;
+        //@ts-ignore
+        const driverId = driver?.userId?._id;
+
+        return assignedUId && driverId && assignedUId.toString() === driverId.toString();
+      });
+
+      const total = assigned.length || 0;
+
+      return {
+        driver,
+        assignedClientCount: total,
+      };
+    });
+
+
     const pageNumber = parseInt(page as string, 10);
     const pageLimit = parseInt(limit as string, 10);
-    const paginatedDrivers = drivers.slice(
+    const paginatedDrivers = updatedDrivers.slice(
       (pageNumber - 1) * pageLimit,
       pageNumber * pageLimit
     );
 
+    console.log("paginatedDrivers", updatedDrivers)
+
     return {
       data: paginatedDrivers,
       meta: {
-        totalCount: drivers.length,
+        totalCount: updatedDrivers.length,
         currentPage: pageNumber,
-        totalPages: Math.ceil(drivers.length / pageLimit),
+        totalPages: Math.ceil(updatedDrivers.length / pageLimit),
         pageLimit,
       },
     };
