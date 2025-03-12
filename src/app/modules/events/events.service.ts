@@ -174,6 +174,11 @@ const getEvents = async (req: Request) => {
 const updateEvent = async (req: Request) => {
   const { eventId } = req.params;
   const updatePayload = req.body;
+
+  if (updatePayload?.dayOfEvent) {
+    updatePayload.dayOfEvent = moment.tz(updatePayload.dayOfEvent, "America/New_York").toDate();
+  }
+
   try {
     const updatedEvent = await Events.findByIdAndUpdate(
       eventId,
