@@ -185,11 +185,9 @@ const updateEvent = async (req: Request) => {
       updatePayload,
       { new: true, runValidators: true }
     );
-
     if (!updatedEvent) {
       throw new ApiError(httpStatus.NOT_FOUND, "Event not found");
     }
-
     return updatedEvent;
   } catch (error) {
     console.error("Failed to update event:", error);
