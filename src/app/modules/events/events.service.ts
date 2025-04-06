@@ -10,6 +10,7 @@ import { TransportVolunteerTable } from "../TransportVolunteer/TransportVoluntee
 import Events from "./events.model";
 import { format } from "date-fns";
 import moment from 'moment-timezone';
+import { expiredRequest } from "../../../mail/expiredRequest";
 
 const createEvent = async (payload: IEvents): Promise<IEvents | null> => {
   console.log("console from service page", payload);
@@ -302,13 +303,14 @@ const addClients = async (req: Request) => {
 };
 
 const acceptRequest = async (req: Request) => {
-  const { eventId, userId, type } = req.query as {
+  const { eventId, userId, type, from } = req.query as {
     eventId: string;
     userId: string;
     type: string;
+    from: string
   };
 
-  if (!eventId || !userId || !type) {
+  if (!eventId || !userId || !type || !from) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Missing required parameters");
   }
 
@@ -317,7 +319,28 @@ const acceptRequest = async (req: Request) => {
     throw new ApiError(httpStatus.NOT_FOUND, "Event not found");
   }
 
+  const userDb = await TransportVolunteerTable.findById(userId);
+  if (!userDb) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Client not found.");
+  }
+  const email = userDb.email as string;
+
   if (type === "driver") {
+    const countConfirm = eventDb.driver.filter(data => data.accept === true).length;
+
+    if (countConfirm >= eventDb.deliveryNeeded && from === 'admin') {
+      throw new ApiError(400, "At this time, all role have been filed.");
+    } else if (countConfirm >= eventDb.deliveryNeeded && from === 'user') {
+      const emailRes = await sendUserRequest({
+        email,
+        subject: "Events Request",
+        html: expiredRequest({
+          email,
+          name: `${userDb.firstName} ${userDb.lastName}`
+        }),
+      });
+      return { message: "Thank you for your interest in joining us. Currently, all positions are filled, but we will contact you if a vacancy opens up." };
+    }
     const driver = eventDb.driver.find((driver: any) =>
       driver.userId.equals(userId)
     );
@@ -327,6 +350,21 @@ const acceptRequest = async (req: Request) => {
       throw new ApiError(httpStatus.NOT_FOUND, "Driver not found");
     }
   } else if (type === "warehouse") {
+    const countConfirm = eventDb.warehouse.filter(data => data.accept === true).length;
+
+    if (countConfirm >= eventDb.deliveryNeeded && from === 'admin') {
+      throw new ApiError(400, "At this time, all role have been filed.");
+    } else if (countConfirm >= eventDb.warehouseNeeded && from === 'user') {
+      const emailRes = await sendUserRequest({
+        email,
+        subject: "Events Request",
+        html: expiredRequest({
+          email,
+          name: `${userDb.firstName} ${userDb.lastName}`
+        }),
+      });
+      return { message: "Thank you for your interest in joining us. Currently, all positions are filled, but we will contact you if a vacancy opens up." };
+    }
     const warehouse = eventDb.warehouse.find((warehouse: any) =>
       warehouse.userId.equals(userId)
     );
@@ -392,8 +430,6 @@ const cancelRequest = async (req: Request) => {
 const removeClientByEmail = async (req: Request) => {
   const { eventId } = req.query;
   const { email, type } = req.body as { email: string; type: string };
-
-  console.log("email", email)
 
   const eventDb = (await Events.findById(eventId)) as IEvents;
   if (!eventDb) {
@@ -481,7 +517,7 @@ const addGroupUpdate = async (payload: {
       { new: true, runValidators: true }
     );
 
-    const clients = groups?.clients
+    const clients = groups?.clients;
 
     if (clients?.length) {
       for (const client of clients) {
@@ -489,9 +525,6 @@ const addGroupUpdate = async (payload: {
         addToClientsGroups({ email: client.email, userId: client._id, type: types, eventId })
       }
     }
-
-
-
     return { message: "Group update added successfully", result };
   } catch (error: any) {
     console.error("Failed to add group update:", error);

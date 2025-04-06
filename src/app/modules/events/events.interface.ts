@@ -43,6 +43,12 @@ type ISendMailEvent = {
   message: string;
 }
 
+type IExpirdEvent = {
+  email: string;
+  name: string;
+}
+
+
 type IGroupRequest = {
   groupId: string;
   eventId: string;
