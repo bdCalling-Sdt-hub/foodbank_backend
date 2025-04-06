@@ -8,6 +8,7 @@ interface IUserObj {
   accept: boolean;
   assigned: boolean;
   assignedUId: Schema.Types.ObjectId
+  confirmed: string
 }
 
 interface IGroup {
@@ -23,6 +24,11 @@ const UserObjSchema = new Schema<IUserObj>({
   },
   email: { type: String, required: true },
   accept: { type: Boolean, default: false },
+  confirmed: {
+    type: String,
+    default: "Not-Called",
+    enum: ["Not-Called", "Confirmed", "Unable-to-Reach", "Rescuedule", "Skip-Month"]
+  },
   assigned: { type: Boolean, default: false },
   assignedUId: {
     type: Schema.Types.ObjectId,

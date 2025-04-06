@@ -943,7 +943,6 @@ const getEventDrivers = async (req: Request) => {
   }
 };
 
-
 const assignedClients = async (req: Request) => {
   try {
     const { eventId, clientId, volunteerId } = req.query;
@@ -978,6 +977,101 @@ const assignedClients = async (req: Request) => {
   }
 };
 
+const confirmedClientsStatusUpdate = async (req: Request) => {
+  try {
+    const { eventId, clientId, confirmed } = req.query;
+
+    if (!eventId || !clientId || !confirmed) {
+      throw new ApiError(httpStatus.BAD_REQUEST, "Missing required parameters");
+    }
+
+    const validConfirmedValues = ["Not-Called", "Confirmed", "Unable-to-Reach", "Rescheduled", "Skip-Month"];
+    if (!validConfirmedValues.includes(confirmed as string)) {
+      throw new ApiError(httpStatus.BAD_REQUEST, "Invalid confirmed value");
+    }
+
+    const event = await Events.findById(eventId);
+    if (!event) {
+      throw new ApiError(httpStatus.NOT_FOUND, "Event not found");
+    }
+
+    const client = event.client.find((c) => c.userId.toString() === clientId) as any;
+
+    if (!client) {
+      throw new ApiError(httpStatus.NOT_FOUND, "Client not found in event");
+    }
+
+    client.confirmed = confirmed;
+
+    await event.save();
+
+    return event;
+  } catch (error: any) {
+    throw new ApiError(error.statusCode || httpStatus.INTERNAL_SERVER_ERROR, error.message || "An error occurred");
+  }
+};
+
+// const getEventClients = async (req: Request) => {
+//   const { eventId } = req.params;
+
+//   try {
+//     const event = await Events.findById(eventId)
+//       .populate("client.userId")
+//       .populate({
+//         path: "groups",
+//         populate: {
+//           path: "gid",
+//           select: "groupName volunteerType id",
+//         },
+//       })
+//       .populate({
+//         path: "client",
+//         populate: {
+//           path: "userId",
+//         },
+//       })
+//       .populate({
+//         path: "client",
+//         populate: {
+//           path: "assignedUId",
+//         },
+//       })
+
+//     if (!event) {
+//       throw new ApiError(httpStatus.NOT_FOUND, "Event not found");
+//     }
+
+//     let holocaustSurvivorsCount = 0;
+//     let nonHolocaustSurvivorsCount = 0;
+
+//     for (const clientObj of event.client) {
+//       const client: any = await TransportVolunteerTable.findById(clientObj.userId);
+//       if (client) {
+//         if (client.holocaustSurvivor === true) {
+//           holocaustSurvivorsCount++;
+//         } else {
+//           nonHolocaustSurvivorsCount++;
+//         }
+//       }
+//     }
+
+//     const totalClients = holocaustSurvivorsCount + nonHolocaustSurvivorsCount;
+
+//     return {
+//       event,
+//       holocaustSurvivors: holocaustSurvivorsCount,
+//       nonHolocaustSurvivors: nonHolocaustSurvivorsCount,
+//       total: totalClients,
+//     };
+//   } catch (error) {
+//     console.error("Failed to fetch event client data:", error);
+//     throw new ApiError(
+//       httpStatus.INTERNAL_SERVER_ERROR,
+//       "Failed to fetch event client data"
+//     );
+//   }
+// };
+
 export const EventService = {
   createEvent,
   getEvent,
@@ -992,5 +1086,7 @@ export const EventService = {
   getEventDrivers,
   acceptRequest,
   cancelRequest,
-  assignedClients
+  assignedClients,
+  confirmedClientsStatusUpdate,
+  // getEventClients
 };

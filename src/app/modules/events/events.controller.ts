@@ -175,8 +175,25 @@ const volunteerDetails = CatchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const confirmedClientsStatusUpdate = CatchAsync(async (req: Request, res: Response) => {
+  const result = await EventService.confirmedClientsStatusUpdate(req as any);
+  return SendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Confirmed Clients Status Update Successfully!",
+    data: result,
+  });
+});
 
-
+// const getEventClients = CatchAsync(async (req: Request, res: Response) => {
+//   const result = await EventService.getEventClients(req as any);
+//   return SendResponse(res, {
+//     statusCode: httpStatus.OK,
+//     success: true,
+//     message: "get successfully!",
+//     data: result,
+//   });
+// });
 
 
 
@@ -195,5 +212,7 @@ export const EventController = {
   acceptRequest,
   cancelRequest,
   assignedClients,
-  volunteerDetails
+  volunteerDetails,
+  confirmedClientsStatusUpdate,
+  // getEventClients
 };

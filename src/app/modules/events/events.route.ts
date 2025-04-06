@@ -82,6 +82,16 @@ router
     AuthProvider.Auth(ENUM_USER_ROLE.SUPER_ADMIN, ENUM_USER_ROLE.ADMIN),
     EventController.volunteerDetails
   )
-
+  // =====================================
+  // .get(
+  //   "/get-event-client/:eventId",
+  //   AuthProvider.Auth(ENUM_USER_ROLE.SUPER_ADMIN, ENUM_USER_ROLE.ADMIN),
+  //   EventController.getEventClients
+  // )
+  .patch(
+    "/confirmed-clients-status",
+    AuthProvider.Auth(ENUM_USER_ROLE.SUPER_ADMIN, ENUM_USER_ROLE.ADMIN),
+    EventController.confirmedClientsStatusUpdate
+  )
 
 export const EventRouters = router;
