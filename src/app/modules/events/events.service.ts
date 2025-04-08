@@ -354,7 +354,7 @@ const acceptRequest = async (req: Request) => {
 
     console.log("countConfirm==", countConfirm, eventDb.warehouseNeeded, from)
 
-    if (countConfirm >= eventDb.deliveryNeeded && from === 'admin') {
+    if (countConfirm >= eventDb.warehouseNeeded && from === 'admin') {
       throw new ApiError(400, "At this time, all role have been filed.");
     } else if (countConfirm >= eventDb.warehouseNeeded && from === 'user') {
       const emailRes = await sendUserRequest({
