@@ -352,6 +352,8 @@ const acceptRequest = async (req: Request) => {
   } else if (type === "warehouse") {
     const countConfirm = eventDb.warehouse.filter(data => data.accept === true).length;
 
+    console.log("countConfirm==", countConfirm, eventDb.warehouseNeeded, from)
+
     if (countConfirm >= eventDb.deliveryNeeded && from === 'admin') {
       throw new ApiError(400, "At this time, all role have been filed.");
     } else if (countConfirm >= eventDb.warehouseNeeded && from === 'user') {
@@ -379,9 +381,7 @@ const acceptRequest = async (req: Request) => {
       "Invalid type. Allowed types: driver, warehouse"
     );
   }
-  await eventDb.save();
-
-  return { message: "Request accepted successfully" };
+  await eventDb.save(); return { message: "Request accepted successfully" };
 };
 
 const cancelRequest = async (req: Request) => {

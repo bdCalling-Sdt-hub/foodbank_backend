@@ -16,6 +16,7 @@ const createEventsDb = CatchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
+
 const getEvent = CatchAsync(async (req: Request, res: Response) => {
   const result = await EventService.getEvent(req as Request);
   SendResponse(res, {
