@@ -27,7 +27,7 @@ const UserObjSchema = new Schema<IUserObj>({
   confirmed: {
     type: String,
     default: "Not-Called",
-    enum: ["Not-Called", "Confirmed", "Unable-to-Reach", "Rescuedule", "Skip-Month"]
+    enum: ["Not-Called", "Confirmed", "Unable-to-Reach", "Rescheduled", "Skip-Month"]
   },
   assigned: { type: Boolean, default: false },
   assignedUId: {
