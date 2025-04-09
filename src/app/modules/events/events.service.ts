@@ -284,8 +284,8 @@ const addClients = async (req: Request) => {
         email,
         name: `${userDb.firstName} ${userDb.lastName}`,
         url: `https://backend.volunhelp.com/api/v1/events/accept-request/${eventId}/${userId}/${type}`,
-        frontend_url: `https://volunhelp.com/accept-request/event/${eventId}/user/${userId}/type/${type}`,
-        cancel_url: `https://volunhelp.com/cancel-request/event/${eventId}/user/${userId}/type/${type}`,
+        frontend_url: `http://172.0.1.108:3000/accept-request/event/${eventId}/user/${userId}/type/${type}`,
+        cancel_url: `http://172.0.1.108:3000/cancel-request/event/${eventId}/user/${userId}/type/${type}`,
         type: typeOfUser,
         event_name: eventDb.eventName,
         message: type === "driver" ? eventDb.messageDeliveryDriver : eventDb.messageWarehouseVolunteer,
@@ -328,6 +328,14 @@ const acceptRequest = async (req: Request) => {
   if (type === "driver") {
     const countConfirm = eventDb.driver.filter(data => data.accept === true).length;
 
+    const alreadyAccepted = eventDb.driver.filter(data => data.userId.toString() === userId && data.accept === true)
+    if (alreadyAccepted) {
+      return {
+        status: false,
+        message: "Your request already accepted successfully"
+      };
+    }
+
     if (countConfirm >= eventDb.deliveryNeeded && from === 'admin') {
       throw new ApiError(400, "At this time, all role have been filed.");
     } else if (countConfirm >= eventDb.deliveryNeeded && from === 'user') {
@@ -339,7 +347,10 @@ const acceptRequest = async (req: Request) => {
           name: `${userDb.firstName} ${userDb.lastName}`
         }),
       });
-      return { message: "Thank you for your interest in joining us. Currently, all positions are filled, but we will contact you if a vacancy opens up." };
+      return {
+        status: false,
+        message: "Thank you for your interest in joining us. Currently, all positions are filled, but we will contact you if a vacancy opens up."
+      };
     }
     const driver = eventDb.driver.find((driver: any) =>
       driver.userId.equals(userId)
@@ -351,8 +362,14 @@ const acceptRequest = async (req: Request) => {
     }
   } else if (type === "warehouse") {
     const countConfirm = eventDb.warehouse.filter(data => data.accept === true).length;
+    const alreadyAccepted = eventDb.warehouse.filter(data => data.userId.toString() === userId && data.accept === true)
 
-    console.log("countConfirm==", countConfirm, eventDb.warehouseNeeded, from)
+    if (alreadyAccepted) {
+      return {
+        status: false,
+        message: "Your request already accepted successfully"
+      };
+    }
 
     if (countConfirm >= eventDb.warehouseNeeded && from === 'admin') {
       throw new ApiError(400, "At this time, all role have been filed.");
@@ -365,7 +382,10 @@ const acceptRequest = async (req: Request) => {
           name: `${userDb.firstName} ${userDb.lastName}`
         }),
       });
-      return { message: "Thank you for your interest in joining us. Currently, all positions are filled, but we will contact you if a vacancy opens up." };
+      return {
+        status: false,
+        message: "Thank you for your interest in joining us. Currently, all positions are filled, but we will contact you if a vacancy opens up."
+      };
     }
     const warehouse = eventDb.warehouse.find((warehouse: any) =>
       warehouse.userId.equals(userId)
@@ -381,7 +401,11 @@ const acceptRequest = async (req: Request) => {
       "Invalid type. Allowed types: driver, warehouse"
     );
   }
-  await eventDb.save(); return { message: "Request accepted successfully" };
+  await eventDb.save();
+  return {
+    status: true,
+    message: "Request accepted successfully"
+  };
 };
 
 const cancelRequest = async (req: Request) => {
