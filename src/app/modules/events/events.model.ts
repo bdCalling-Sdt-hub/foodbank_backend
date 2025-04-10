@@ -16,6 +16,18 @@ interface IGroup {
   type: string;
 }
 
+const groupObject = new Schema<IGroup>({
+  gid: {
+    type: Schema.Types.ObjectId,
+    ref: "Groups",
+  },
+  type: {
+    type: String,
+    enum: ["client", "warehouse", "driver"],
+    required: true,
+  },
+});
+
 const UserObjSchema = new Schema<IUserObj>({
   userId: {
     type: Schema.Types.ObjectId,
@@ -34,18 +46,6 @@ const UserObjSchema = new Schema<IUserObj>({
     type: Schema.Types.ObjectId,
     ref: "TransportVolunteers",
     default: null,
-  },
-});
-
-const groupObject = new Schema<IGroup>({
-  gid: {
-    type: Schema.Types.ObjectId,
-    ref: "Groups",
-  },
-  type: {
-    type: String,
-    enum: ["client", "warehouse", "driver"],
-    required: true,
   },
 });
 

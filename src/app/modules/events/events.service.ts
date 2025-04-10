@@ -1001,6 +1001,31 @@ const assignedClients = async (req: Request) => {
   }
 };
 
+const getAssignedClientsForEvent = async (req: Request) => {
+  try {
+    const { eventId } = req.query;
+
+    if (!eventId) {
+      throw new ApiError(httpStatus.BAD_REQUEST, "Event ID is required");
+    }
+
+    const event = await Events.findById(eventId)
+      .select("client")
+      .populate("client.userId")
+      .populate("client.assignedUId");
+
+    if (!event) {
+      throw new ApiError(httpStatus.NOT_FOUND, "Event not found");
+    }
+
+    const assignedClients = event.client.filter((c: any) => c.assigned);
+
+    return assignedClients;
+  } catch (error: any) {
+    throw new ApiError(error.statusCode || httpStatus.INTERNAL_SERVER_ERROR, error.message || "An error occurred");
+  }
+};
+
 const confirmedClientsStatusUpdate = async (req: Request) => {
   try {
     const { eventId, clientId, confirmed } = req.query;
@@ -1112,5 +1137,6 @@ export const EventService = {
   cancelRequest,
   assignedClients,
   confirmedClientsStatusUpdate,
+  getAssignedClientsForEvent
   // getEventClients
 };

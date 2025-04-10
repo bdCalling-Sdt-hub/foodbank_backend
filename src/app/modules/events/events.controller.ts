@@ -186,6 +186,18 @@ const confirmedClientsStatusUpdate = CatchAsync(async (req: Request, res: Respon
   });
 });
 
+const getAssignedClientsForEvent = CatchAsync(async (req: Request, res: Response) => {
+  const result = await EventService.getAssignedClientsForEvent(req as any);
+  return SendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Confirmed Clients Status Update Successfully!",
+    data: result,
+  });
+});
+
+
+
 // const getEventClients = CatchAsync(async (req: Request, res: Response) => {
 //   const result = await EventService.getEventClients(req as any);
 //   return SendResponse(res, {
@@ -215,5 +227,7 @@ export const EventController = {
   assignedClients,
   volunteerDetails,
   confirmedClientsStatusUpdate,
+  getAssignedClientsForEvent,
+  getAssignedClientsForEvent
   // getEventClients
 };

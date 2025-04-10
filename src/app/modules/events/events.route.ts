@@ -93,5 +93,11 @@ router
     AuthProvider.Auth(ENUM_USER_ROLE.SUPER_ADMIN, ENUM_USER_ROLE.ADMIN),
     EventController.confirmedClientsStatusUpdate
   )
+  .get(
+    "/get_assigned_clients_for_event",
+    // AuthProvider.Auth(ENUM_USER_ROLE.SUPER_ADMIN, ENUM_USER_ROLE.ADMIN),
+    EventController.getAssignedClientsForEvent
+  )
+
 
 export const EventRouters = router;
