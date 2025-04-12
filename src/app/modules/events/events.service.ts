@@ -1010,6 +1010,7 @@ const getAssignedClientsForEvent = async (req: Request) => {
     }
 
     const event = await Events.findById(eventId)
+      .select("client")
       .populate("client.userId")
       .populate("client.assignedUId");
 
@@ -1020,7 +1021,7 @@ const getAssignedClientsForEvent = async (req: Request) => {
     const assignedClients = event.client.filter((c: any) => c.assigned);
 
 
-    return { event, assignedClients };
+    return assignedClients;
   } catch (error: any) {
     throw new ApiError(error.statusCode || httpStatus.INTERNAL_SERVER_ERROR, error.message || "An error occurred");
   }
