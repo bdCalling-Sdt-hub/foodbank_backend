@@ -1019,7 +1019,7 @@ const getAssignedClientsForEvent = async (req: Request) => {
 
     const assignedClients = event.client.filter((c: any) => c.assigned);
 
-    return { eventDetails, assignedClients };
+    return { eventDetails: event, assignedClients };
   } catch (error: any) {
     throw new ApiError(error.statusCode || httpStatus.INTERNAL_SERVER_ERROR, error.message || "An error occurred");
   }
