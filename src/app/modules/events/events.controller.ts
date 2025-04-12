@@ -228,6 +228,6 @@ export const EventController = {
   volunteerDetails,
   confirmedClientsStatusUpdate,
   getAssignedClientsForEvent,
-  getAssignedClientsForEvent
+
   // getEventClients
 };

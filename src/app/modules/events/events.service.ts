@@ -314,6 +314,8 @@ const acceptRequest = async (req: Request) => {
     throw new ApiError(httpStatus.BAD_REQUEST, "Missing required parameters");
   }
 
+  console.log("==========", eventId, userId, type, from)
+
   const eventDb = await Events.findById(eventId);
   if (!eventDb) {
     throw new ApiError(httpStatus.NOT_FOUND, "Event not found");
@@ -329,7 +331,8 @@ const acceptRequest = async (req: Request) => {
     const countConfirm = eventDb.driver.filter(data => data.accept === true).length;
 
     const alreadyAccepted = eventDb.driver.filter(data => data.userId.toString() === userId && data.accept === true)
-    if (alreadyAccepted) {
+    console.log("==========sss", alreadyAccepted)
+    if (alreadyAccepted?.length) {
       return {
         status: false,
         message: "Your request already accepted successfully"
@@ -364,7 +367,7 @@ const acceptRequest = async (req: Request) => {
     const countConfirm = eventDb.warehouse.filter(data => data.accept === true).length;
     const alreadyAccepted = eventDb.warehouse.filter(data => data.userId.toString() === userId && data.accept === true)
 
-    if (alreadyAccepted) {
+    if (alreadyAccepted?.length) {
       return {
         status: false,
         message: "Your request already accepted successfully"
@@ -1029,6 +1032,8 @@ const confirmedClientsStatusUpdate = async (req: Request) => {
   try {
     const { eventId, clientId, confirmed } = req.query;
 
+    console.log("==========", eventId, clientId, confirmed)
+
     if (!eventId || !clientId || !confirmed) {
       throw new ApiError(httpStatus.BAD_REQUEST, "Missing required parameters");
     }
@@ -1050,8 +1055,9 @@ const confirmedClientsStatusUpdate = async (req: Request) => {
     }
 
     client.confirmed = confirmed;
-
     await event.save();
+
+    console.log("dksa", event)
 
     return event;
   } catch (error: any) {
