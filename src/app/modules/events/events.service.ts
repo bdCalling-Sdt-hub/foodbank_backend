@@ -1008,6 +1008,7 @@ const getAssignedClientsForEvent = async (req: Request) => {
   try {
     const { eventId } = req.query;
 
+    console.log("======", eventId)
     if (!eventId) {
       throw new ApiError(httpStatus.BAD_REQUEST, "Event ID is required");
     }
@@ -1020,7 +1021,11 @@ const getAssignedClientsForEvent = async (req: Request) => {
       throw new ApiError(httpStatus.NOT_FOUND, "Event not found");
     }
 
-    const assignedClients = event.client.filter((c: any) => c.assigned);
+    const assignedClients = event.client.filter((c: any) => c.assigned === true);
+
+    console.log("======", event.client.length)
+
+    console.log("assignedClients", assignedClients.length)
 
     return { eventDetails: event, assignedClients };
   } catch (error: any) {
