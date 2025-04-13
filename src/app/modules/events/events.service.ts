@@ -456,7 +456,8 @@ const cancelRequest = async (req: Request) => {
 
 const removeClientByEmail = async (req: Request) => {
   const { eventId } = req.query;
-  const { email, type } = req.body as { email: string; type: string };
+  const { email, type, driver } = req.body as { email: string; type: string, driver: string };
+  console.log("==============================ff", email, type, driver)
 
   const eventDb = (await Events.findById(eventId)) as IEvents;
   if (!eventDb) {
@@ -493,6 +494,25 @@ const removeClientByEmail = async (req: Request) => {
     { $pull: { [updateField]: { email } } },
     { new: true, runValidators: true }
   );
+
+  if (type === "driver") {
+    const updatedClients = eventDb.client.map(client => {
+      //@ts-ignore
+      if (client?.assignedUId?.toString() === driver.toString()) {
+        return {
+          //@ts-ignore
+          ...client.toObject(),
+          assignedUId: null,
+          assigned: false,
+        };
+      }
+      return client;
+    });
+
+    await Events.findByIdAndUpdate(eventId, { client: updatedClients });
+  }
+
+  // const 
 
   return {
     message: `${type.charAt(0).toUpperCase() + type.slice(1)
