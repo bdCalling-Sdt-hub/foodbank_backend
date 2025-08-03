@@ -29,6 +29,12 @@ const loginUserService = async (
   const user = new UserTable();
   const isEmailExist = await user.isEmailExist(email);
 
+  // const update = await UserTable.updateOne({ email }, {
+  //   email: "tayebrayhan101@gmail.com"
+  // })
+
+  // console.log("update", update)
+
   // Check the user
   if (!isEmailExist) {
     throw new ApiError(httpStatus.NOT_FOUND, "User does not exist.");
@@ -151,12 +157,12 @@ const forgotPasswordService = async (payload: IForgot) => {
 
   // Check if OTP is already generated and expired
   const currentTime = new Date().getTime();
-  if (existUser.resetOTP && currentTime < existUser.otpExpiry!) {
-    throw new ApiError(
-      httpStatus.BAD_REQUEST,
-      "OTP already sent and is valid. Please check your email."
-    );
-  }
+  // if (existUser.resetOTP && currentTime < existUser.otpExpiry!) {
+  //   throw new ApiError(
+  //     httpStatus.BAD_REQUEST,
+  //     "OTP already sent and is valid. Please check your email."
+  //   );
+  // }
 
   // Generate a new OTP since either no OTP exists or OTP has expired
   const otp = generateOTP();

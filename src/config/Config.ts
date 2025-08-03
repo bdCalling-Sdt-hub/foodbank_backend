@@ -13,6 +13,10 @@ export default {
   refresh_key: process.env.JWT_REFRESH_KEY,
   fefresh_key_expire_in: process.env.JWT_REFRESH_KEY_EXPIRE_IN,
 
+  mailgunApiKey: process.env.MAILGUN_API_KEY,
+  mailgunDomain: process.env.MAILGUN_DOMAIN,
+  // Optional if you want to reuse it elsewhere
+  // email: process.env.MAILGUN_EMAIL_FROM || "support@yourdomain.com",
   email: process.env.EMAIL_USER,
   appKey: process.env.EMAIL_PASS,
   smtp_name: process.env.SMTP_NAME,
