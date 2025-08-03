@@ -67,7 +67,7 @@ const sendUserRequest = async (options: IEmailOptions): Promise<void> => {
     const { email, subject, html } = options;
 
     const mailOptions = {
-        from: `${Config.smtp_name} <support@${Config.mailgunDomain}>`,
+        from: `Volunhelp.com <support@${Config.mailgunDomain}>`,
         to: email,
         subject,
         html,

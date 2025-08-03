@@ -53,7 +53,7 @@ export const MailSend = async (payload: { email: string;[key: string]: any }) =>
   const transporter = nodemailer.createTransport(mailgun(auth));
 
   await transporter.sendMail({
-    from: `Support <support@${Config.mailgunDomain}>`,
+    from: `Volunhelp.com <support@${Config.mailgunDomain}>`,
     to: user,
     subject: subject,
     html: MailBody(payload),
