@@ -157,12 +157,12 @@ const forgotPasswordService = async (payload: IForgot) => {
 
   // Check if OTP is already generated and expired
   const currentTime = new Date().getTime();
-  // if (existUser.resetOTP && currentTime < existUser.otpExpiry!) {
-  //   throw new ApiError(
-  //     httpStatus.BAD_REQUEST,
-  //     "OTP already sent and is valid. Please check your email."
-  //   );
-  // }
+  if (existUser.resetOTP && currentTime < existUser.otpExpiry!) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      "OTP already sent and is valid. Please check your email."
+    );
+  }
 
   // Generate a new OTP since either no OTP exists or OTP has expired
   const otp = generateOTP();
