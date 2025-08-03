@@ -29,11 +29,6 @@ const loginUserService = async (
   const user = new UserTable();
   const isEmailExist = await user.isEmailExist(email);
 
-  // const update = await UserTable.updateOne({ email }, {
-  //   email: "tayebrayhan101@gmail.com"
-  // })
-
-  // console.log("update", update)
 
   // Check the user
   if (!isEmailExist) {
