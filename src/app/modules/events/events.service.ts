@@ -910,20 +910,21 @@ const getEventsGroups = async (payload: IGetGroups) => {
 
 const getEventDrivers = async (req: Request) => {
   try {
-    const { eventId, page = 1, limit = 10, searchTerm, accept, types } = req.query;
+    const { eventId, searchTerm, accept, types } = req.query;
 
     if (!eventId) {
       throw new ApiError(httpStatus.BAD_REQUEST, "Event ID is required");
     }
 
-    const event = await Events.findById(eventId).populate({
-      path: "driver.userId",
-      // select: "firstName lastName email",
-    })
+    const event = await Events.findById(eventId)
+      .populate({
+        path: "driver.userId",
+        // select: "firstName lastName email",
+      })
       .populate({
         path: "warehouse.userId",
         // select: "firstName lastName email",
-      })
+      });
 
     if (!event) {
       throw new ApiError(httpStatus.NOT_FOUND, "Event not found");
@@ -931,13 +932,16 @@ const getEventDrivers = async (req: Request) => {
 
     let drivers;
     if (types === "driver") {
-      drivers = event.driver.filter((driver) => accept === "yes" ? driver.accept : !driver.accept);
+      drivers = event.driver.filter((driver) =>
+        accept === "yes" ? driver.accept : !driver.accept
+      );
     } else if (types === "warehouse") {
-      drivers = event.warehouse.filter((driver) => accept === "yes" ? driver.accept : !driver.accept);
+      drivers = event.warehouse.filter((driver) =>
+        accept === "yes" ? driver.accept : !driver.accept
+      );
     } else {
-      throw new ApiError(httpStatus.NOT_FOUND, "Invalid types")
+      throw new ApiError(httpStatus.NOT_FOUND, "Invalid types");
     }
-
 
     if (searchTerm) {
       const regex = new RegExp(searchTerm as string, "i");
@@ -947,14 +951,17 @@ const getEventDrivers = async (req: Request) => {
       });
     }
 
-
     const updatedDrivers = drivers.map((driver) => {
       const assigned = event?.client?.filter((cl: any) => {
         const assignedUId = cl?.assignedUId;
         //@ts-ignore
         const driverId = driver?.userId?._id;
 
-        return assignedUId && driverId && assignedUId.toString() === driverId.toString();
+        return (
+          assignedUId &&
+          driverId &&
+          assignedUId.toString() === driverId.toString()
+        );
       });
 
       const total = assigned.length || 0;
@@ -965,23 +972,10 @@ const getEventDrivers = async (req: Request) => {
       };
     });
 
-
-    const pageNumber = parseInt(page as string, 10);
-    const pageLimit = parseInt(limit as string, 10);
-    const paginatedDrivers = updatedDrivers.slice(
-      (pageNumber - 1) * pageLimit,
-      pageNumber * pageLimit
-    );
-
-    console.log("paginatedDrivers", updatedDrivers)
-
     return {
-      data: paginatedDrivers,
+      data: updatedDrivers,
       meta: {
         totalCount: updatedDrivers.length,
-        currentPage: pageNumber,
-        totalPages: Math.ceil(updatedDrivers.length / pageLimit),
-        pageLimit,
       },
     };
   } catch (error) {
@@ -989,6 +983,7 @@ const getEventDrivers = async (req: Request) => {
     throw new ApiError(httpStatus.BAD_REQUEST, message);
   }
 };
+
 
 const assignedClients = async (req: Request) => {
   try {
